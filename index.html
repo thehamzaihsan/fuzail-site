@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fuzail Ahmed — 3D Artist</title>
+<meta name="description" content="Fuzail Ahmed — 3D artist. Product visuals, hard-surface, furniture, environments and archviz built in Blender.">
+<meta name="theme-color" content="#120a06">
+<link rel="stylesheet" href="css/style.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff5a1f'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' dominant-baseline='middle' font-family='Impact,Arial Black,sans-serif' font-size='40' fill='%23111'%3EF%3C/text%3E%3C/svg%3E">
+<script type="importmap">{"imports":{"three":"./vendor/three.module.min.js","three/addons/":"./vendor/jsm/"}}</script>
+</head>
+<body class="is-loading">
+
+<!-- ░░ PRELOADER ░░ -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__top"><span>Fuzail Ahmed</span><span>3D Portfolio — 2026</span></div>
+  <div class="loader__count"><span id="loadNum">0</span><i>%</i></div>
+  <div class="loader__bar"><i id="loadBar"></i></div>
+  <div class="loader__bottom"><span id="loadMsg">Warming up the render engine</span><span>Blender → WebGL</span></div>
+</div>
+
+<div class="cursor" id="cursor"><span class="cursor__label" id="cursorLabel"></span></div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ░░ NAV ░░ -->
+<header class="nav" id="nav">
+  <a class="nav__logo" href="#top" data-link>FUZAIL<sup>®</sup></a>
+  <nav class="nav__links" aria-label="Sections">
+    <a href="#work" data-link>Work</a>
+    <a href="#furniture" data-link>Furniture</a>
+    <a href="#environments" data-link>Environments</a>
+    <a href="#archviz" data-link>ArchViz</a>
+    <a href="#reel" data-link>Motion</a>
+    <a href="#about" data-link>About</a>
+  </nav>
+  <a class="pill pill--nav" href="#contact" data-link><span class="dot"></span>Let’s talk</a>
+  <button class="nav__burger" id="burger" aria-label="Menu"><i></i><i></i></button>
+</header>
+<div class="menu" id="menu">
+  <a href="#work" data-link>Work</a><a href="#furniture" data-link>Furniture</a><a href="#environments" data-link>Environments</a>
+  <a href="#archviz" data-link>ArchViz</a><a href="#reel" data-link>Motion</a><a href="#about" data-link>About</a><a href="#contact" data-link>Contact</a>
+</div>
+
+<main id="top">
+
+<!-- ░░ HERO SHOWROOM ░░ -->
+<section class="hero" id="hero" data-theme="dark">
+  <div class="hero__bg" id="heroBg"></div>
+  <div class="hero__word hero__word--solid" id="wordSolid" aria-hidden="true"></div>
+  <div class="hero__canvas" id="heroCanvasWrap"><canvas id="heroCanvas" aria-label="Interactive 3D model, drag to rotate"></canvas></div>
+  <div class="hero__word hero__word--outline" id="wordOutline" aria-hidden="true"></div>
+
+  <div class="hero__intro">
+    <p class="eyebrow"><span class="dot"></span>Fuzail Ahmed — 3D Artist</p>
+    <h1 class="hero__claim">Technical precision.<br><em>Cinematic atmosphere.</em></h1>
+  </div>
+
+  <div class="hero__meta">
+    <div class="hero__info" id="heroInfo">
+      <span class="tag" id="heroKind">Product Visual</span>
+      <h2 id="heroTitle">J. Janan Oud</h2>
+      <p id="heroBlurb"></p>
+      <div class="hero__actions">
+        <button class="pill pill--solid" id="heroInspect" data-cursor="Open">Inspect in 3D <span class="arrow">↗</span></button>
+        <span class="hint"><b>Drag</b> to rotate</span>
+      </div>
+    </div>
+    <div class="rail" id="rail" role="tablist" aria-label="Choose a model"></div>
+    <div class="hero__count">
+      <span id="heroIdx">01</span><span class="sep">/</span><span id="heroTotal">08</span>
+      <div class="hero__arrows">
+        <button id="prevModel" aria-label="Previous model">←</button>
+        <button id="nextModel" aria-label="Next model">→</button>
+      </div>
+    </div>
+  </div>
+  <a class="scrollcue" href="#work" data-link><span>Scroll</span><i></i></a>
+</section>
+
+<!-- ░░ MARQUEE ░░ -->
+<div class="marquee" aria-hidden="true"><div class="marquee__track" id="marquee"></div></div>
+
+<!-- ░░ STATEMENT ░░ -->
+<section class="statement" id="statement" data-bg="#0d0c0b" data-ink="#f2ede4" data-theme="dark">
+  <p class="eyebrow">( Who )</p>
+  <p class="statement__text split-words" id="statementText"></p>
+  <div class="statement__cols">
+    <div><span class="num">01</span><h3>Product Visuals</h3><p>Glass, metals and packaging lit to sell — stills and product films.</p></div>
+    <div><span class="num">02</span><h3>Hard-Surface &amp; Furniture</h3><p>Sub-D topology, clean UVs, low/high-poly bakes ready for any pipeline.</p></div>
+    <div><span class="num">03</span><h3>Environments</h3><p>World-building with scatter, volumetrics and colour grading.</p></div>
+    <div><span class="num">04</span><h3>ArchViz</h3><p>Architecture and interiors, from abstract towers to warm rooms.</p></div>
+  </div>
+</section>
+
+<!-- ░░ FEATURED WORK ░░ -->
+<section class="work" id="work">
+  <div class="sechead" data-bg="#0d0c0b" data-ink="#f2ede4" data-theme="dark">
+    <p class="eyebrow">( Selected work )</p>
+    <h2 class="mega">PRODUCT<br><span class="outline">VISUALS</span></h2>
+  </div>
+  <div id="featured"></div>
+</section>
+
+<!-- ░░ FURNITURE ░░ -->
+<section class="furniture" id="furniture" data-bg="#0d3a31" data-ink="#f6ecd6" data-theme="dark">
+  <div class="sechead sechead--row">
+    <div>
+      <p class="eyebrow">( Furniture modelling )</p>
+      <h2 class="mega">BUILD IT<br><span class="outline">YOUR WAY</span></h2>
+    </div>
+    <p class="sechead__copy">Two Sub-D studies taken from block-out to final render. Pick a fabric, spin the model, then step through the breakdown — wireframe, UV flow, IDs and clay.</p>
+  </div>
+  <div class="furn">
+    <div class="furn__tabs" id="furnTabs">
+      <button class="chip is-active" data-furn="chair">Crown Chair</button>
+      <button class="chip" data-furn="sofa">Curved Sofa</button>
+    </div>
+    <div class="furn__grid">
+      <div class="furn__stage">
+        <div class="furn__canvas" id="furnCanvasWrap" data-cursor="Drag"><canvas id="furnCanvas"></canvas></div>
+        <div class="furn__swatches" id="furnSwatches"></div>
+        <div class="furn__poly" id="furnPoly"></div>
+      </div>
+      <div class="furn__break">
+        <div class="furn__img" id="furnImg" data-cursor="View"></div>
+        <div class="furn__steps" id="furnSteps"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ ENVIRONMENTS ░░ -->
+<section class="envs" id="environments" data-bg="#100f0b" data-ink="#efe8da" data-theme="dark">
+  <div class="sechead sechead--row">
+    <div>
+      <p class="eyebrow">( Environment design )</p>
+      <h2 class="mega">WORLDS<br><span class="outline">UNIMAGINED</span></h2>
+    </div>
+    <p class="sechead__copy">From grounded reality to the boundless reaches of imagination — temples, forests, glaciers and villages, built with a mix of self-modelled assets, Botaniq and BlenderKit, textured in Substance Painter and finished in Photoshop &amp; Lightroom.</p>
+  </div>
+  <div class="hscroll" id="hscroll">
+    <div class="hscroll__track" id="envTrack"></div>
+  </div>
+  <div class="compare-wrap">
+    <div class="compare-head"><p class="eyebrow">( Clay → Final )</p><h3>Rakotzbrücke, under the hood</h3><p>Drag the handle to peel the render back to its clay pass.</p></div>
+    <div class="compare" id="compare" data-cursor="Drag">
+      <img src="assets/img/rakotz.jpg" alt="Rakotzbrücke final render" loading="lazy">
+      <div class="compare__top"><img src="assets/img/rakotz_clay.jpg" alt="Rakotzbrücke clay render" loading="lazy"></div>
+      <div class="compare__handle"><span>⟷</span></div>
+      <span class="compare__lbl compare__lbl--l">Clay</span><span class="compare__lbl compare__lbl--r">Final</span>
+    </div>
+  </div>
+</section>
+
+<!-- ░░ ARCHVIZ ░░ -->
+<section class="arch" id="archviz" data-bg="#e3e0d9" data-ink="#151515" data-theme="light">
+  <div class="sechead sechead--row">
+    <div>
+      <p class="eyebrow">( Architecture )</p>
+      <h2 class="mega">ARCH<span class="outline">VIZ</span></h2>
+    </div>
+    <p class="sechead__copy">Heydar Aliyev Center study — the real model, live in your browser. Orbit around it and drag the sun across the sky to watch the shadows slide over Zaha Hadid’s curves.</p>
+  </div>
+  <div class="arch__stage">
+    <div class="arch__canvas" id="archCanvasWrap" data-cursor="Orbit"><canvas id="archCanvas"></canvas></div>
+    <div class="arch__ui">
+      <div class="arch__title"><span class="tag">Live model · 182k tris</span><h3>Heydar Aliyev Center</h3></div>
+      <label class="sun"><span>Sun</span><input type="range" id="sun" min="0" max="100" value="38"><b id="sunTime">10:40</b></label>
+      <button class="pill pill--ghost" id="archInspect" data-cursor="Open">Full screen ↗</button>
+    </div>
+  </div>
+  <div class="arch__grid" id="archGrid"></div>
+</section>
+
+<!-- ░░ REEL ░░ -->
+<section class="reel" id="reel" data-bg="#0b0b0b" data-ink="#f1f1f1" data-theme="dark">
+  <div class="sechead sechead--row">
+    <div>
+      <p class="eyebrow">( Motion )</p>
+      <h2 class="mega">IN <span class="outline">MOTION</span></h2>
+    </div>
+    <p class="sechead__copy">Turntables, product films, simulations and camera moves. Hover to play, click to watch.</p>
+  </div>
+  <div class="reel__grid" id="reelGrid"></div>
+</section>
+
+<!-- ░░ MORE ░░ -->
+<section class="more" id="more" data-bg="#f3f1ec" data-ink="#111111" data-theme="light">
+  <div class="sechead sechead--row">
+    <div>
+      <p class="eyebrow">( Archive )</p>
+      <h2 class="mega">MORE FROM<br><span class="outline">THE LAB</span></h2>
+    </div>
+    <div class="filters" id="filters"></div>
+  </div>
+  <div class="more__grid" id="moreGrid"></div>
+</section>
+
+<!-- ░░ ABOUT ░░ -->
+<section class="about" id="about" data-bg="#ff5a1f" data-ink="#120a06" data-theme="light">
+  <div class="about__grid">
+    <div>
+      <p class="eyebrow">( About )</p>
+      <h2 class="mega">HI, IT’S<br>FUZAIL.</h2>
+    </div>
+    <div class="about__copy">
+      <p id="aboutText"></p>
+      <p id="aboutText2"></p>
+    </div>
+  </div>
+  <div class="toolkit" id="toolkit"></div>
+</section>
+
+<!-- ░░ CONTACT ░░ -->
+<section class="contact" id="contact" data-bg="#0d0c0b" data-ink="#f2ede4" data-theme="dark">
+  <p class="eyebrow">( Contact )</p>
+  <a class="contact__big" id="mailBig" href="#" data-cursor="Copy">
+    <span class="line"><span class="in">LET’S BUILD</span></span>
+    <span class="line outline"><span class="in">SOMETHING REAL</span></span>
+  </a>
+  <div class="contact__row">
+    <button class="pill pill--solid" id="copyMail" data-cursor="Copy"><span id="mailText">email</span> <span class="arrow">⧉</span></button>
+    <a class="pill pill--ghost" id="mailLink" href="#">Write an email ↗</a>
+  </div>
+  <footer class="footer">
+    <span>© <span id="year"></span> Fuzail Ahmed</span>
+    <span>All renders &amp; models made in Blender</span>
+    <a href="#top" data-link>Back to top ↑</a>
+  </footer>
+</section>
+</main>
+
+<!-- ░░ 3D INSPECTOR ░░ -->
+<div class="inspector" id="inspector" aria-hidden="true" role="dialog" aria-label="3D model inspector">
+  <div class="inspector__bg" id="inspBg"></div>
+  <div class="inspector__word" id="inspWord"></div>
+  <div class="inspector__canvas" data-cursor="Orbit"><canvas id="inspCanvas"></canvas></div>
+  <div class="inspector__top">
+    <div><span class="tag" id="inspKind"></span><h3 id="inspTitle"></h3></div>
+    <button class="close" id="inspClose" aria-label="Close inspector">✕</button>
+  </div>
+  <aside class="inspector__panel">
+    <div class="group"><span class="lbl">View</span>
+      <div class="seg" id="inspModes">
+        <button data-mode="textured" class="is-active">Final</button><button data-mode="clay">Clay</button><button data-mode="wire">Wire</button><button data-mode="normals">Normals</button>
+      </div>
+    </div>
+    <div class="group"><span class="lbl">Light</span>
+      <div class="seg" id="inspLights">
+        <button data-light="match" class="is-active">Match</button><button data-light="studio">Studio</button><button data-light="night">Night</button>
+      </div>
+    </div>
+    <div class="group" id="inspExplodeG"><span class="lbl">Explode</span><input type="range" id="inspExplode" min="0" max="100" value="0"></div>
+    <div class="group" id="inspSwatchG"><span class="lbl">Colourway</span><div class="swatches" id="inspSwatches"></div></div>
+    <div class="group stats" id="inspStats"></div>
+    <div class="group row">
+      <button class="pill pill--ghost sm" id="inspSpin">Auto-rotate: on</button>
+      <button class="pill pill--ghost sm" id="inspShot">Snapshot ⤓</button>
+    </div>
+  </aside>
+  <div class="inspector__models" id="inspModels"></div>
+  <p class="inspector__hint">Drag to orbit · Scroll to zoom · Esc to close</p>
+</div>
+
+<!-- ░░ LIGHTBOX ░░ -->
+<div class="lightbox" id="lightbox" aria-hidden="true" role="dialog">
+  <button class="close" id="lbClose" aria-label="Close">✕</button>
+  <button class="lb-nav lb-prev" id="lbPrev" aria-label="Previous">←</button>
+  <figure id="lbFig"></figure>
+  <button class="lb-nav lb-next" id="lbNext" aria-label="Next">→</button>
+  <p class="lb-cap" id="lbCap"></p>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="vendor/gsap.min.js"></script>
+<script src="vendor/ScrollTrigger.min.js"></script>
+<script src="vendor/lenis.min.js"></script>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
