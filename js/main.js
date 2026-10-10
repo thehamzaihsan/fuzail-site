@@ -9,8 +9,8 @@ const gsap = window.gsap, ScrollTrigger = window.ScrollTrigger;
 gsap.registerPlugin(ScrollTrigger);
 const isTouch = matchMedia('(hover: none)').matches;
 const small = () => innerWidth < 760;
-const img = (id) => `assets/img/${id}.jpg`;
-const thumb = (id) => `assets/thumb/${id}.jpg`;
+const img = (id) => `assets/img/${id}.webp`;
+const thumb = (id) => `assets/thumb/${id}.webp`;
 let MEDIA = {};
 
 /* ───────────── smooth scroll ───────────── */
@@ -191,7 +191,7 @@ FEATURED.forEach((p) => {
     </div>
     <div class="proj__gallery">
       ${p.images.map((id, i) => `<figure class="shot reveal-img ${layout[i] || 'g-h'}" data-lb="${p.id}" data-i="${i}"><img src="${img(id)}" alt="${p.title} render ${i + 1}" loading="lazy" data-speed="${i % 2 ? 0.06 : -0.04}"><figcaption>${p.title} — ${String(i + 1).padStart(2, '0')}</figcaption></figure>`).join('')}
-      ${p.video ? `<figure class="shot reveal-img g-w" data-lb="${p.id}" data-i="${p.images.length}"><video src="assets/video/${p.video}.mp4" poster="assets/video/${p.video}.jpg" muted loop playsinline preload="none"></video><figcaption>Product film</figcaption></figure>` : ''}
+      ${p.video ? `<figure class="shot reveal-img g-w" data-lb="${p.id}" data-i="${p.images.length}"><video src="assets/video/${p.video}.mp4" poster="assets/video/${p.video}.webp" muted loop playsinline preload="none"></video><figcaption>Product film</figcaption></figure>` : ''}
     </div>`;
   featured.appendChild(s);
   lbSets[p.id] = [...p.images.map((id) => ({ type: 'img', src: img(id), cap: p.title })), ...(p.video ? [{ type: 'video', src: `assets/video/${p.video}.mp4`, cap: p.title + ' — film' }] : [])];
@@ -305,7 +305,7 @@ $('#archGrid').innerHTML = ARCHVIZ.map((a, i) => `<figure class="shot reveal-img
 lbSets.arch = ARCHVIZ.map((a) => ({ type: 'img', src: img(a.id), cap: `${a.title} — ${a.note}` }));
 
 /* ═════════════ REEL ═════════════ */
-$('#reelGrid').innerHTML = REEL.map((r, i) => `<figure class="clip" data-lb="reel" data-i="${i}"><img src="assets/video/${r.id}.jpg" alt="${r.title}" loading="lazy"><video muted loop playsinline preload="none" src="assets/video/${r.id}.mp4"></video><div class="clip__meta"><h4>${r.title}</h4><span class="clip__play">▶</span></div></figure>`).join('');
+$('#reelGrid').innerHTML = REEL.map((r, i) => `<figure class="clip" data-lb="reel" data-i="${i}"><img src="assets/video/${r.id}.webp" alt="${r.title}" loading="lazy"><video muted loop playsinline preload="none" src="assets/video/${r.id}.mp4"></video><div class="clip__meta"><h4>${r.title}</h4><span class="clip__play">▶</span></div></figure>`).join('');
 lbSets.reel = REEL.map((r) => ({ type: 'video', src: `assets/video/${r.id}.mp4`, cap: r.title }));
 $$('.clip').forEach((c, i) => {
   const v = $('video', c);
