@@ -4,11 +4,11 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { MODELS } from './data.js';
+import { MODELS, asset } from './data.js';
 
 const LITE = new URLSearchParams(location.search).has('lite');
 export const manager = new THREE.LoadingManager();
-const draco = new DRACOLoader(manager).setDecoderPath('vendor/draco/');
+const draco = new DRACOLoader(manager).setDecoderPath(asset('vendor/draco/'));
 const gltfLoader = new GLTFLoader(manager).setDRACOLoader(draco);
 const texLoader = new THREE.TextureLoader(manager);
 const cache = new Map();
@@ -16,16 +16,18 @@ const cache = new Map();
 export function loadGLTF(key) {
   if (!cache.has(key)) {
     const cfg = MODELS[key];
-    cache.set(key, new Promise((res, rej) => gltfLoader.load(cfg.file, res, undefined, rej)));
+    const src = cfg.file.startsWith('blob:') ? cfg.file : asset(cfg.file);
+    cache.set(key, new Promise((res, rej) => gltfLoader.load(src, res, undefined, rej)));
   }
   return cache.get(key);
 }
+export function forget(key) { cache.delete(key); }
 
 const texCache = new Map();
 function tex(url, srgb) {
   const k = url + srgb;
   if (!texCache.has(k)) {
-    const t = texLoader.load(url);
+    const t = texLoader.load(asset(url));
     t.flipY = false;
     if (srgb) t.colorSpace = THREE.SRGBColorSpace;
     t.anisotropy = 8;
@@ -74,7 +76,7 @@ export async function buildModel(key) {
 
   root.traverse((o) => {
     if (!o.isMesh) return;
-    if (cfg.hide && cfg.hide.some((n) => o.name.startsWith(n))) { o.visible = false; return; }
+    if (cfg.hide && cfg.hide.length && cfg.hide.some((n) => o.name.startsWith(n))) { o.visible = false; return; }
     o.castShadow = true; o.receiveShadow = true;
     const fix = (m) => {
       m = m.clone();
@@ -142,7 +144,7 @@ export async function buildModel(key) {
     p.userData.worldC = mc.clone();
   });
   pivot.userData.parts = parts;
-  if (cfg.swatches) setColorway(pivot, cfg.swatches[0][1]);
+  if (cfg.swatches && cfg.swatches.length) setColorway(pivot, cfg.swatches[0].color);
   return pivot;
 }
 

@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Stage, manager, loadGLTF, setColorway, setMode, explode } from './stage.js';
-import { ARTIST, MODELS, SHOWROOM, FEATURED, FURNITURE, ENVIRONMENTS, ARCHVIZ, MORE, REEL, TOOLKIT } from './data.js';
+import { ARTIST, MODELS, SHOWROOM, FEATURED, FURNITURE, ENVIRONMENTS, COMPARE, ARCHVIZ, MORE, REEL, TOOLKIT, MARQUEE, HIGHLIGHTS } from './data.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -12,6 +12,10 @@ const small = () => innerWidth < 760;
 const img = (id) => `assets/img/${id}.webp`;
 const thumb = (id) => `assets/thumb/${id}.webp`;
 let MEDIA = {};
+// escape any content text before it goes into HTML (defence in depth for admin-edited content)
+const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const col = (v, d = '#888888') => (/^#[0-9a-f]{3,8}$/i.test(v || '') ? v : d);
+const sid = (v) => String(v ?? '').replace(/[^a-z0-9_-]/gi, '');
 
 /* ───────────── smooth scroll ───────────── */
 const lenis = new window.Lenis({ lerp: 0.09, smoothWheel: true });
@@ -57,7 +61,7 @@ SHOWROOM.forEach((k, i) => {
   b.setAttribute('role', 'tab');
   b.setAttribute('aria-label', c.title);
   b.style.setProperty('--sw-bg', c.bg); b.style.setProperty('--sw-ink', c.dark ? c.ink : c.glow);
-  b.innerHTML = `<span>${c.title}</span><svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="27"/></svg>`;
+  b.innerHTML = `<span>${esc(c.title)}</span><svg viewBox="0 0 58 58"><circle cx="29" cy="29" r="27"/></svg>`;
   b.addEventListener('click', () => { setHero(i); autoT = 0; });
   rail.appendChild(b);
 });
@@ -69,7 +73,7 @@ $('#hero').addEventListener('pointerenter', () => (heroHover = true));
 $('#hero').addEventListener('pointerleave', () => (heroHover = false));
 
 function splitWord(el, word) {
-  el.innerHTML = [...word].map((ch) => `<span class="ch">${ch === ' ' ? '&nbsp;' : ch}</span>`).join('');
+  el.innerHTML = [...String(word || '')].map((ch) => `<span class="ch">${ch === ' ' ? '&nbsp;' : esc(ch)}</span>`).join('');
   return $$('.ch', el);
 }
 function setHeroVars(c) {
@@ -146,19 +150,22 @@ lenis.on('scroll', ({ scroll }) => {
 });
 
 /* ═════════════ MARQUEE + STATEMENT ═════════════ */
-const words = ['Blender', 'Product Visuals', 'ZBrush', 'Environments', 'Substance Painter', 'Furniture', 'Unreal Engine', 'ArchViz', 'Clo3D', 'Motion'];
-$('#marquee').innerHTML = [...words, ...words].map((w) => `<span>${w}</span>`).join('');
+$('#marquee').innerHTML = [...MARQUEE, ...MARQUEE].map((w) => `<span>${esc(w)}</span>`).join('');
+$('#claim1').textContent = ARTIST.claim1 || '';
+$('#claim2').textContent = ARTIST.claim2 || '';
 const stmt = $('#statementText');
-stmt.innerHTML = ARTIST.intro.split(' ').map((w) => {
-  const it = /precision|cinematic|atmosphere|unimagined/i.test(w);
-  return `<span class="w">${it ? `<em>${w}</em>` : w}</span>`;
+const hl = HIGHLIGHTS.map((h) => h.toLowerCase());
+stmt.innerHTML = String(ARTIST.intro || '').split(' ').map((w) => {
+  const it = hl.some((h) => h && w.toLowerCase().replace(/[^a-z]/g, '') === h.replace(/[^a-z]/g, ''));
+  return `<span class="w">${it ? `<em>${esc(w)}</em>` : esc(w)}</span>`;
 }).join(' ');
 gsap.to('#statementText .w', { opacity: 1, stagger: 0.05, ease: 'none', scrollTrigger: { trigger: '#statementText', start: 'top 80%', end: 'bottom 45%', scrub: true } });
 
 /* ═════════════ FEATURED PROJECTS ═════════════ */
 const featured = $('#featured');
 const lbSets = {};
-FEATURED.forEach((p) => {
+FEATURED.forEach((p, pi) => {
+  p = { ...p, id: sid(p.id), model: MODELS[p.model] ? p.model : '', bg: col(p.bg, '#111111'), ink: col(p.ink, '#ffffff'), accent: col(p.accent, '#ff5a1f'), images: (p.images || []).map(sid), video: sid(p.video), no: String(pi + 1).padStart(2, '0') };
   const s = document.createElement('article');
   s.className = 'proj';
   s.id = 'p-' + p.id;
@@ -169,28 +176,28 @@ FEATURED.forEach((p) => {
   s.innerHTML = `
     <div class="proj__head">
       <span class="proj__no">${p.no}</span>
-      <div><span class="proj__cat">${p.cat}</span><h3 class="proj__title">${titleLines.map((l) => `<span class="ln"><span>${l}</span></span>`).join('')}</h3></div>
+      <div><span class="proj__cat">${esc(p.cat)}</span><h3 class="proj__title">${titleLines.map((l) => `<span class="ln"><span>${esc(l)}</span></span>`).join('')}</h3></div>
     </div>
-    <button class="proj__float" data-model="${p.model}" data-cursor="Open" aria-label="Inspect ${p.title} in 3D">
+    ${p.model ? `<button class="proj__float" data-model="${p.model}" data-cursor="Open" aria-label="Inspect ${esc(p.title)} in 3D">
       <svg viewBox="0 0 200 200" width="100%" height="100%"><defs><path id="c-${p.id}" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs>
       <g class="ring" style="transform-origin:100px 100px"><text font-size="13" fill="currentColor" font-family="JetBrains Mono, monospace"><textPath href="#c-${p.id}" textLength="486" lengthAdjust="spacing">INSPECT IN 3D • DRAG • ORBIT • ZOOM •</textPath></text></g>
       <circle cx="100" cy="100" r="36" fill="${p.accent}"/><text x="100" y="109" text-anchor="middle" font-size="24" fill="${p.bg}" font-family="Anton, Impact">3D</text></svg>
-    </button>
+    </button>` : ''}
     <div class="proj__body">
       <div>
-        <p class="proj__text fade-up">${p.text}</p>
+        <p class="proj__text fade-up">${esc(p.text)}</p>
       </div>
       <div class="fade-up">
-        <dl class="proj__specs">${p.specs.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('')}</dl>
-        <div class="proj__tools">${p.tools.map((t) => `<span>${t}</span>`).join('')}</div>
+        <dl class="proj__specs">${(p.specs || []).map((s) => `<div><dt>${esc(s.label)}</dt><dd>${esc(s.value)}</dd></div>`).join('')}</dl>
+        <div class="proj__tools">${(p.tools || []).map((t) => `<span>${esc(t)}</span>`).join('')}</div>
         <div class="proj__btns">
-          <button class="pill pill--solid" data-model="${p.model}" data-cursor="Open">Inspect 3D model <span class="arrow">↗</span></button>
+          ${p.model ? `<button class="pill pill--solid" data-model="${p.model}" data-cursor="Open">Inspect 3D model <span class="arrow">↗</span></button>` : ''}
           <button class="pill pill--ghost" data-gallery="${p.id}">Full gallery</button>
         </div>
       </div>
     </div>
     <div class="proj__gallery">
-      ${p.images.map((id, i) => `<figure class="shot reveal-img ${layout[i] || 'g-h'}" data-lb="${p.id}" data-i="${i}"><img src="${img(id)}" alt="${p.title} render ${i + 1}" loading="lazy" data-speed="${i % 2 ? 0.06 : -0.04}"><figcaption>${p.title} — ${String(i + 1).padStart(2, '0')}</figcaption></figure>`).join('')}
+      ${p.images.map((id, i) => `<figure class="shot reveal-img ${layout[i] || 'g-h'}" data-lb="${p.id}" data-i="${i}"><img src="${img(id)}" alt="${esc(p.title)} render ${i + 1}" loading="lazy" data-speed="${i % 2 ? 0.06 : -0.04}"><figcaption>${esc(p.title)} — ${String(i + 1).padStart(2, '0')}</figcaption></figure>`).join('')}
       ${p.video ? `<figure class="shot reveal-img g-w" data-lb="${p.id}" data-i="${p.images.length}"><video src="assets/video/${p.video}.mp4" poster="assets/video/${p.video}.webp" muted loop playsinline preload="none"></video><figcaption>Product film</figcaption></figure>` : ''}
     </div>`;
   featured.appendChild(s);
@@ -214,29 +221,34 @@ $$('.proj__gallery video').forEach((v) => new IntersectionObserver((e) => { e[0]
 
 /* ═════════════ FURNITURE ═════════════ */
 let furnStage = null, furnKey = 'chair';
+$('#furnTabs').innerHTML = FURNITURE.map((f, i) => `<button class="chip ${i === 0 ? 'is-active' : ''}" data-furn="${i}">${esc(f.title)}</button>`).join('');
+if (!FURNITURE.length) $('#furniture').style.display = 'none';
 function initFurniture() {
+  if (!FURNITURE.length) return;
   furnStage = new Stage($('#furnCanvas'), { autoRotate: 0.3, distance: 5, float: 0.02 });
   furnStage.setColors({ glow: '#ffd27a', dark: true });
-  setFurniture('chair');
+  setFurniture(0);
 }
-$$('#furnTabs .chip').forEach((b) => b.addEventListener('click', () => { $$('#furnTabs .chip').forEach((x) => x.classList.toggle('is-active', x === b)); setFurniture(b.dataset.furn); }));
+$$('#furnTabs .chip').forEach((b) => b.addEventListener('click', () => { $$('#furnTabs .chip').forEach((x) => x.classList.toggle('is-active', x === b)); setFurniture(+b.dataset.furn); }));
 async function setFurniture(key) {
   furnKey = key;
   const F = FURNITURE[key], c = MODELS[F.model];
+  const SW = c.swatches || [];
   const model = await furnStage.show(F.model);
   const sw = $('#furnSwatches');
-  sw.innerHTML = c.swatches.map(([n, hex], i) => `<button class="swatch ${i === 0 ? 'is-active' : ''}" style="--c:${hex}" data-hex="${hex}"><i></i>${n}</button>`).join('');
-  if (model) setColorway(model, c.swatches[0][1]);
+  sw.innerHTML = SW.map((s, i) => `<button class="swatch ${i === 0 ? 'is-active' : ''}" style="--c:${col(s.color)}" data-hex="${col(s.color)}"><i></i>${esc(s.name)}</button>`).join('');
+  if (model && SW.length) setColorway(model, col(SW[0].color));
   $$('.swatch', sw).forEach((b) => b.addEventListener('click', () => {
     $$('.swatch', sw).forEach((x) => x.classList.toggle('is-active', x === b));
     if (furnStage.model) setColorway(furnStage.model, b.dataset.hex);
   }));
-  $('#furnPoly').innerHTML = F.poly.map(([a, b]) => `<div><dt>${a}</dt><dd>${b}</dd></div>`).join('');
+  $('#furnPoly').innerHTML = (F.poly || []).map((p) => `<div><dt>${esc(p.label)}</dt><dd>${esc(p.value)}</dd></div>`).join('');
   const steps = $('#furnSteps');
-  steps.innerHTML = F.stages.map(([n], i) => `<button class="${i === 0 ? 'is-active' : ''}" data-i="${i}"><b>${String(i + 1).padStart(2, '0')}</b>${n}</button>`).join('');
-  lbSets.furn = F.stages.map(([n, id]) => ({ type: 'img', src: img(id), cap: `${F.title} — ${n}` }));
+  const ST = F.stages || [];
+  steps.innerHTML = ST.map((s, i) => `<button class="${i === 0 ? 'is-active' : ''}" data-i="${i}"><b>${String(i + 1).padStart(2, '0')}</b>${esc(s.label)}</button>`).join('');
+  lbSets.furn = ST.map((s) => ({ type: 'img', src: img(sid(s.image)), cap: `${F.title} — ${s.label}` }));
   const box = $('#furnImg');
-  box.innerHTML = F.stages.map(([n, id], i) => `<img src="${img(id)}" alt="${F.title} ${n}" style="opacity:${i === 0 ? 1 : 0}" loading="lazy">`).join('');
+  box.innerHTML = ST.map((s, i) => `<img src="${img(sid(s.image))}" alt="${esc(F.title)} ${esc(s.label)}" style="opacity:${i === 0 ? 1 : 0}" loading="lazy">`).join('');
   box.onclick = () => openLB(lbSets.furn, furnStep);
   furnStep = 0;
   $$('button', steps).forEach((b) => b.addEventListener('click', () => showStep(+b.dataset.i)));
@@ -252,10 +264,10 @@ function showStep(i) {
 const envTrack = $('#envTrack');
 envTrack.innerHTML = ENVIRONMENTS.map((e, i) => `
   <article class="env" data-lb="env" data-i="${i}">
-    <div class="env__img"><img src="${img(e.id)}" alt="${e.title}" loading="lazy"><span class="env__no">${String(i + 1).padStart(2, '0')} / ${ENVIRONMENTS.length}</span></div>
-    <div class="env__meta"><h3>${e.title}</h3><span>${e.sub}<br>${e.note}</span></div>
+    <div class="env__img"><img src="${img(sid(e.id))}" alt="${esc(e.title)}" loading="lazy"><span class="env__no">${String(i + 1).padStart(2, '0')} / ${ENVIRONMENTS.length}</span></div>
+    <div class="env__meta"><h3>${esc(e.title)}</h3><span>${esc(e.sub)}<br>${esc(e.note)}</span></div>
   </article>`).join('');
-lbSets.env = ENVIRONMENTS.map((e) => ({ type: 'img', src: img(e.id), cap: `${e.title} — ${e.note}` }));
+lbSets.env = ENVIRONMENTS.map((e) => ({ type: 'img', src: img(sid(e.id)), cap: `${e.title} — ${e.note}` }));
 function initHScroll() {
   if (small()) return;
   const dist = () => envTrack.scrollWidth - innerWidth;
@@ -268,6 +280,10 @@ function initHScroll() {
 // compare slider
 (function compare() {
   const c = $('#compare'); let on = false;
+  if (!COMPARE || !COMPARE.before || !COMPARE.after) { $('.compare-wrap').style.display = 'none'; return; }
+  $('#cmpTitle').textContent = COMPARE.title || ''; $('#cmpNote').textContent = COMPARE.note || '';
+  $('#cmpAfter').src = img(sid(COMPARE.after)); $('#cmpBefore').src = img(sid(COMPARE.before));
+  $('#cmpLblL').textContent = COMPARE.beforeLabel || 'Clay'; $('#cmpLblR').textContent = COMPARE.afterLabel || 'Final';
   const set = (x) => { const r = c.getBoundingClientRect(); c.style.setProperty('--x', Math.max(0, Math.min(100, ((x - r.left) / r.width) * 100)) + '%'); };
   c.addEventListener('pointerdown', (e) => { on = true; set(e.clientX); c.setPointerCapture(e.pointerId); });
   c.addEventListener('pointermove', (e) => { if (on || !isTouch) set(e.clientX); });
@@ -278,13 +294,14 @@ function initHScroll() {
 /* ═════════════ ARCHVIZ ═════════════ */
 let archStage = null;
 function initArch() {
+  if (!MODELS[ARCHVIZ.model]) { $('.arch__stage').style.display = 'none'; return; }
   archStage = new Stage($('#archCanvas'), { orbit: true, autoRotate: 0.12, distance: 6.4, realShadows: true, shadow: false, float: 0, fov: 32 });
   archStage.setColors({ glow: '#ffffff', dark: false });
   archStage.rim.intensity = 0;
   archStage.scene.environmentIntensity = 0.55;
   archStage.camera.position.set(4.2, 2.2, 4.6);
   archStage.controls.maxPolarAngle = Math.PI / 2.05;
-  archStage.show('heydar', { animate: false }).then(() => setSun(+$('#sun').value));
+  archStage.show(ARCHVIZ.model, { animate: false }).then(() => setSun(+$('#sun').value));
   // allow page scroll on wheel – only zoom inside fullscreen
   archStage.controls.enableZoom = false;
 }
@@ -300,13 +317,14 @@ function setSun(v) {
   const mins = Math.round(360 + t * 780); $('#sunTime').textContent = `${String(Math.floor(mins / 60)).padStart(2, '0')}:${String(mins % 60).padStart(2, '0')}`;
 }
 $('#sun').addEventListener('input', (e) => setSun(+e.target.value));
-$('#archInspect').addEventListener('click', (e) => openInspector('heydar', e));
-$('#archGrid').innerHTML = ARCHVIZ.map((a, i) => `<figure class="shot reveal-img" data-lb="arch" data-i="${i}"><img src="${img(a.id)}" alt="${a.title}" loading="lazy"><div class="cap"><h4>${a.title}</h4><p>${a.note}</p></div></figure>`).join('');
-lbSets.arch = ARCHVIZ.map((a) => ({ type: 'img', src: img(a.id), cap: `${a.title} — ${a.note}` }));
+$('#archInspect').addEventListener('click', (e) => openInspector(ARCHVIZ.model, e));
+$('#archTitle').textContent = ARCHVIZ.title || ''; $('#archTag').textContent = ARCHVIZ.tag || '';
+$('#archGrid').innerHTML = ARCHVIZ.items.map((a, i) => `<figure class="shot reveal-img" data-lb="arch" data-i="${i}"><img src="${img(sid(a.id))}" alt="${esc(a.title)}" loading="lazy"><div class="cap"><h4>${esc(a.title)}</h4><p>${esc(a.note)}</p></div></figure>`).join('');
+lbSets.arch = ARCHVIZ.items.map((a) => ({ type: 'img', src: img(sid(a.id)), cap: `${a.title} — ${a.note}` }));
 
 /* ═════════════ REEL ═════════════ */
-$('#reelGrid').innerHTML = REEL.map((r, i) => `<figure class="clip" data-lb="reel" data-i="${i}"><img src="assets/video/${r.id}.webp" alt="${r.title}" loading="lazy"><video muted loop playsinline preload="none" src="assets/video/${r.id}.mp4"></video><div class="clip__meta"><h4>${r.title}</h4><span class="clip__play">▶</span></div></figure>`).join('');
-lbSets.reel = REEL.map((r) => ({ type: 'video', src: `assets/video/${r.id}.mp4`, cap: r.title }));
+$('#reelGrid').innerHTML = REEL.map((r, i) => `<figure class="clip" data-lb="reel" data-i="${i}"><img src="assets/video/${sid(r.id)}.webp" alt="${esc(r.title)}" loading="lazy"><video muted loop playsinline preload="none" src="assets/video/${sid(r.id)}.mp4"></video><div class="clip__meta"><h4>${esc(r.title)}</h4><span class="clip__play">▶</span></div></figure>`).join('');
+lbSets.reel = REEL.map((r) => ({ type: 'video', src: `assets/video/${sid(r.id)}.mp4`, cap: r.title }));
 $$('.clip').forEach((c, i) => {
   const v = $('video', c);
   const play = () => { v.play().then(() => c.classList.add('is-playing')).catch(() => {}); };
@@ -317,15 +335,15 @@ $$('.clip').forEach((c, i) => {
 
 /* ═════════════ MORE (product grid) ═════════════ */
 const cats = ['All', ...new Set(MORE.map((m) => m.cat))];
-$('#filters').innerHTML = cats.map((c, i) => `<button class="chip ${i === 0 ? 'is-active' : ''}" data-cat="${c}">${c}</button>`).join('');
+$('#filters').innerHTML = cats.map((c, i) => `<button class="chip ${i === 0 ? 'is-active' : ''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('');
 function renderMore() {
   $('#moreGrid').innerHTML = MORE.map((m, i) => {
     const md = MEDIA[m.id] || {};
     const sw = [md.dom, md.accent, md.avg].filter(Boolean);
-    return `<article class="card" data-lb="more" data-i="${i}" data-cat="${m.cat}"><div class="card__img" style="background:${md.avg || '#ddd'}"><img src="${thumb(m.id)}" alt="${m.title}" loading="lazy"></div><div class="card__meta"><h4>${m.title}</h4><p>${m.cat}</p><div class="sw">${sw.map((c) => `<i style="background:${c}"></i>`).join('')}</div></div></article>`;
+    return `<article class="card" data-lb="more" data-i="${i}" data-cat="${esc(m.cat)}"><div class="card__img" style="background:${col(md.avg, '#dddddd')}"><img src="${thumb(sid(m.id))}" alt="${esc(m.title)}" loading="lazy"></div><div class="card__meta"><h4>${esc(m.title)}</h4><p>${esc(m.cat)}</p><div class="sw">${sw.map((c) => `<i style="background:${col(c)}"></i>`).join('')}</div></div></article>`;
   }).join('');
 }
-lbSets.more = MORE.map((m) => ({ type: 'img', src: img(m.id), cap: `${m.title} — ${m.cat}` }));
+lbSets.more = MORE.map((m) => ({ type: 'img', src: img(sid(m.id)), cap: `${m.title} — ${m.cat}` }));
 $('#filters').addEventListener('click', (e) => {
   const b = e.target.closest('[data-cat]'); if (!b) return;
   $$('#filters .chip').forEach((x) => x.classList.toggle('is-active', x === b));
@@ -336,7 +354,7 @@ $('#filters').addEventListener('click', (e) => {
 /* ═════════════ ABOUT / CONTACT ═════════════ */
 $('#aboutText').textContent = ARTIST.intro;
 $('#aboutText2').textContent = ARTIST.intro2;
-$('#toolkit').innerHTML = TOOLKIT.map(([h, list]) => `<div><h4>${h}</h4><ul>${list.map((t) => `<li>${t}</li>`).join('')}</ul></div>`).join('');
+$('#toolkit').innerHTML = TOOLKIT.map((g) => `<div><h4>${esc(g.title)}</h4><ul>${(g.items || []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>`).join('');
 $('#mailText').textContent = ARTIST.email;
 $('#mailLink').href = 'mailto:' + ARTIST.email;
 $('#year').textContent = new Date().getFullYear();
@@ -354,10 +372,11 @@ gsap.utils.toArray('.mega').forEach((m) => gsap.from(m, { y: 80, opacity: 0, dur
 /* ═════════════ INSPECTOR ═════════════ */
 let insp = null, inspKey = null, inspMode = 'textured', inspSpin = true;
 const inspEl = $('#inspector');
-const INSP_KEYS = ['oud', 'keyboard', 'dupas', 'watch', 'chair', 'sofa', 'speaker', 'blade', 'spray', 'heydar'];
-$('#inspModels').innerHTML = INSP_KEYS.map((k) => `<button data-k="${k}">${MODELS[k].title}</button>`).join('');
+const INSP_KEYS = Object.keys(MODELS).filter((k) => MODELS[k].inspector !== false && !MODELS[k].hidden);
+$('#inspModels').innerHTML = INSP_KEYS.map((k) => `<button data-k="${esc(k)}">${esc(MODELS[k].title)}</button>`).join('');
 $('#inspModels').addEventListener('click', (e) => { const b = e.target.closest('[data-k]'); if (b) loadInspector(b.dataset.k); });
 function openInspector(key, ev) {
+  if (!MODELS[key]) return;
   if (ev && ev.clientX != null) { inspEl.style.setProperty('--ox', ev.clientX + 'px'); inspEl.style.setProperty('--oy', ev.clientY + 'px'); }
   inspEl.classList.add('is-open'); inspEl.setAttribute('aria-hidden', 'false');
   lenis.stop();
@@ -381,17 +400,17 @@ async function loadInspector(key) {
   $('#inspTitle').textContent = c.title; $('#inspKind').textContent = c.kind; $('#inspWord').textContent = c.word;
   $$('#inspModels button').forEach((b) => b.classList.toggle('is-active', b.dataset.k === key));
   insp.setColors(c); applyLight('match');
-  insp.camera.position.set(0, 0.6, (key === 'heydar' ? 6.5 : 5.2) * (innerWidth < 760 ? 1.45 : 1)); insp.controls.target.set(0, 0, 0);
+  insp.camera.position.set(0, 0.6, (c.clay ? 6.5 : 5.2) * (innerWidth < 760 ? 1.45 : 1)); insp.controls.target.set(0, 0, 0);
   const m = await insp.show(key);
   if (!m) return;
   setMode(m, inspMode, c.ink);
   $('#inspExplode').value = 0;
   $('#inspExplodeG').style.display = m.userData.parts.length > 2 ? '' : 'none';
   const sw = $('#inspSwatches');
-  if (c.swatches) {
+  if (c.swatches && c.swatches.length) {
     $('#inspSwatchG').style.display = '';
-    sw.innerHTML = c.swatches.map(([n, hex], i) => `<button title="${n}" style="--c:${hex}" data-hex="${hex}" class="${i === 0 ? 'is-active' : ''}"></button>`).join('');
-    setColorway(m, c.swatches[0][1]);
+    sw.innerHTML = c.swatches.map((s, i) => `<button title="${esc(s.name)}" style="--c:${col(s.color)}" data-hex="${col(s.color)}" class="${i === 0 ? 'is-active' : ''}"></button>`).join('');
+    setColorway(m, col(c.swatches[0].color));
   } else $('#inspSwatchG').style.display = 'none';
   const st = m.userData.stats;
   const fmt = (n) => (n >= 1000 ? (n / 1000).toFixed(n >= 100000 ? 0 : 1) + 'k' : n);
@@ -422,7 +441,7 @@ const lb = $('#lightbox');
 function openLB(list, i) { if (!list) return; lbList = list; lbI = i; lb.classList.add('is-open'); lb.setAttribute('aria-hidden', 'false'); lenis.stop(); showLB(); }
 function showLB() {
   const it = lbList[lbI];
-  $('#lbFig').innerHTML = it.type === 'video' ? `<video src="${it.src}" controls autoplay loop playsinline></video>` : `<img src="${it.src}" alt="${it.cap}">`;
+  $('#lbFig').innerHTML = it.type === 'video' ? `<video src="${it.src}" controls autoplay loop playsinline></video>` : `<img src="${it.src}" alt="${esc(it.cap)}">`;
   $('#lbCap').textContent = `${it.cap}  ·  ${lbI + 1} / ${lbList.length}`;
   gsap.fromTo('#lbFig > *', { scale: 0.96, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: 'expo.out' });
 }
@@ -464,8 +483,8 @@ function finishLoad() {
 async function boot() {
   try { MEDIA = await (await fetch('assets/media.json')).json(); } catch { MEDIA = {}; }
   renderMore();
-  setHero(0, true);
-  const first = loadGLTF(SHOWROOM[0]);
+  if (SHOWROOM.length) setHero(0, true); else $('#hero').style.display = 'none';
+  const first = SHOWROOM.length ? loadGLTF(SHOWROOM[0]) : Promise.resolve();
   await Promise.race([Promise.all([first, document.fonts.ready]), new Promise((r) => setTimeout(r, 15000))]);
   target = 100; loaded = true;
   observeReveals();

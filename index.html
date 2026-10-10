@@ -85,7 +85,7 @@
 
   <div class="hero__intro">
     <p class="eyebrow"><span class="dot"></span>Fuzail Ahmed — 3D Artist</p>
-    <h1 class="hero__claim">Technical precision.<br><em>Cinematic atmosphere.</em></h1>
+    <h1 class="hero__claim"><span id="claim1"></span><br><em id="claim2"></em></h1>
   </div>
 
   <div class="hero__meta">
@@ -145,8 +145,6 @@
   </div>
   <div class="furn">
     <div class="furn__tabs" id="furnTabs">
-      <button class="chip is-active" data-furn="chair">Crown Chair</button>
-      <button class="chip" data-furn="sofa">Curved Sofa</button>
     </div>
     <div class="furn__grid">
       <div class="furn__stage">
@@ -175,12 +173,12 @@
     <div class="hscroll__track" id="envTrack"></div>
   </div>
   <div class="compare-wrap">
-    <div class="compare-head"><p class="eyebrow">( Clay → Final )</p><h3>Rakotzbrücke, under the hood</h3><p>Drag the handle to peel the render back to its clay pass.</p></div>
+    <div class="compare-head"><p class="eyebrow">( Before → After )</p><h3 id="cmpTitle"></h3><p id="cmpNote"></p></div>
     <div class="compare" id="compare" data-cursor="Drag">
-      <img src="assets/img/rakotz.webp" alt="Rakotzbrücke final render" loading="lazy">
-      <div class="compare__top"><img src="assets/img/rakotz_clay.webp" alt="Rakotzbrücke clay render" loading="lazy"></div>
+      <img id="cmpAfter" alt="Final render" loading="lazy">
+      <div class="compare__top"><img id="cmpBefore" alt="Clay render" loading="lazy"></div>
       <div class="compare__handle"><span>⟷</span></div>
-      <span class="compare__lbl compare__lbl--l">Clay</span><span class="compare__lbl compare__lbl--r">Final</span>
+      <span class="compare__lbl compare__lbl--l" id="cmpLblL">Clay</span><span class="compare__lbl compare__lbl--r" id="cmpLblR">Final</span>
     </div>
   </div>
 </section>
@@ -197,7 +195,7 @@
   <div class="arch__stage">
     <div class="arch__canvas" id="archCanvasWrap" data-cursor="Orbit"><canvas id="archCanvas"></canvas></div>
     <div class="arch__ui">
-      <div class="arch__title"><span class="tag">Live model · 182k tris</span><h3>Heydar Aliyev Center</h3></div>
+      <div class="arch__title"><span class="tag" id="archTag"></span><h3 id="archTitle"></h3></div>
       <label class="sun"><span>Sun</span><input type="range" id="sun" min="0" max="100" value="38"><b id="sunTime">10:40</b></label>
       <button class="pill pill--ghost" id="archInspect" data-cursor="Open">Full screen ↗</button>
     </div>

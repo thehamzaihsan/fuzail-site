@@ -1,0 +1,860 @@
+{
+ "rev": 2,
+ "artist": {
+  "name": "Fuzail Ahmed",
+  "first": "FUZAIL",
+  "role": "3D Artist",
+  "email": "fuzailahmed546@gmail.com",
+  "intro": "I am a digital creator focused on high-fidelity 3D execution. Whether I’m crafting hyper-realistic product animations or building entirely fictional, unimagined worlds, I bridge the gap between technical precision and cinematic atmosphere.",
+  "intro2": "Driven by the aesthetics of modern games and film, I deconstruct complex objects to rebuild them with digital perfection — from grounded reality to the boundless reaches of imagination.",
+  "claim1": "Technical precision.",
+  "claim2": "Cinematic atmosphere."
+ },
+ "marquee": [
+  "Blender",
+  "Product Visuals",
+  "ZBrush",
+  "Environments",
+  "Substance Painter",
+  "Furniture",
+  "Unreal Engine",
+  "ArchViz",
+  "Clo3D",
+  "Motion"
+ ],
+ "highlights": [
+  "precision",
+  "cinematic",
+  "atmosphere",
+  "unimagined"
+ ],
+ "models": {
+  "oud": {
+   "file": "assets/models/oud_b.glb",
+   "title": "J. Janan Oud",
+   "word": "JANAN",
+   "kind": "Product Visual",
+   "blurb": "Refractive glass, gold-leaf metallics and the deep amber of the fragrance — a study in PBR layering.",
+   "bg": "#120a06",
+   "bg2": "#3a1a07",
+   "ink": "#f1b46a",
+   "glow": "#ff8a2a",
+   "dark": true,
+   "rot": [
+    0.0,
+    -0.35,
+    0.0
+   ],
+   "fit": 1.55,
+   "y": 0.0,
+   "inspector": true
+  },
+  "keyboard": {
+   "file": "assets/models/keyboard.glb",
+   "title": "HP Omen Encoder",
+   "word": "OMEN",
+   "kind": "Hard-Surface",
+   "blurb": "Mechanical gaming keyboard rebuilt switch by switch — industrial design meets gaming aesthetics.",
+   "bg": "#080707",
+   "bg2": "#3b0508",
+   "ink": "#ff2a35",
+   "glow": "#ff1020",
+   "dark": true,
+   "rot": [
+    0.62,
+    -0.42,
+    0.08
+   ],
+   "fit": 2.5,
+   "y": 0.05,
+   "explode": true,
+   "inspector": true
+  },
+  "dupas": {
+   "file": "assets/models/dupas.glb",
+   "title": "Dupas Lumin",
+   "word": "LUMIN",
+   "kind": "Commercial Banner",
+   "blurb": "CeRetinol serum bottles lit for a night-themed web banner for Dupas Lumin.",
+   "bg": "#041b1c",
+   "bg2": "#0b4a4c",
+   "ink": "#7ff6f2",
+   "glow": "#38e8ff",
+   "dark": true,
+   "rot": [
+    0.0,
+    -0.5,
+    0.0
+   ],
+   "fit": 1.8,
+   "y": 0.0,
+   "hide": [
+    "Text",
+    "Text001"
+   ],
+   "inspector": true
+  },
+  "watch": {
+   "file": "assets/models/watch.glb",
+   "title": "Chrono Study",
+   "word": "TIME",
+   "kind": "Product Visual",
+   "blurb": "Anisotropic brushed steel, a sunburst dial and a sapphire crystal — explored in blue and green.",
+   "bg": "#dfe4e8",
+   "bg2": "#ffffff",
+   "ink": "#0b2e57",
+   "glow": "#5aa0ff",
+   "dark": false,
+   "rot": [
+    1.321,
+    0.3,
+    0.0
+   ],
+   "fit": 1.7,
+   "y": 0.0,
+   "glass": [
+    "Material.001"
+   ],
+   "inspector": true
+  },
+  "chair": {
+   "file": "assets/models/chair.glb",
+   "title": "Crown Chair",
+   "word": "CROWN",
+   "kind": "Furniture · Sub-D",
+   "blurb": "Sub-D modelled lounge chair — 3.5k tris low poly, 45.4k tris high poly, clean quad flow.",
+   "bg": "#0d3a31",
+   "bg2": "#16584a",
+   "ink": "#f2c35b",
+   "glow": "#ffd27a",
+   "dark": true,
+   "rot": [
+    0.05,
+    -0.55,
+    0.0
+   ],
+   "fit": 1.75,
+   "y": 0.0,
+   "fabric": [
+    "Soft Suede Fabric"
+   ],
+   "swatches": [
+    {
+     "name": "Emerald",
+     "color": "#1f6b5a"
+    },
+    {
+     "name": "Mustard",
+     "color": "#d39a2c"
+    },
+    {
+     "name": "Blush",
+     "color": "#c9787f"
+    },
+    {
+     "name": "Ink",
+     "color": "#1d2433"
+    }
+   ],
+   "inspector": true
+  },
+  "sofa": {
+   "file": "assets/models/sofa.glb",
+   "title": "Curved Sofa",
+   "word": "CURVE",
+   "kind": "Furniture · Sub-D",
+   "blurb": "Organic boucle sofa — 15k tris low poly, 42k tris high poly, built for real-time and offline.",
+   "bg": "#e8dccb",
+   "bg2": "#f6efe4",
+   "ink": "#3d3326",
+   "glow": "#c9a77a",
+   "dark": false,
+   "rot": [
+    0.12,
+    -1.071,
+    0.0
+   ],
+   "fit": 2.6,
+   "y": 0.0,
+   "fabric": [
+    "Fluffy Velvet"
+   ],
+   "swatches": [
+    {
+     "name": "Oat",
+     "color": "#c9b79a"
+    },
+    {
+     "name": "Sage",
+     "color": "#8f9b7c"
+    },
+    {
+     "name": "Terracotta",
+     "color": "#b76a4b"
+    },
+    {
+     "name": "Charcoal",
+     "color": "#3a3a3c"
+    }
+   ],
+   "inspector": true
+  },
+  "speaker": {
+   "file": "assets/models/speaker.glb",
+   "title": "Kisonli Q22",
+   "word": "Q22",
+   "kind": "Product Animation",
+   "blurb": "Portable speaker hero shots with fluid-sim water splash and LED detailing.",
+   "bg": "#d6d6d2",
+   "bg2": "#f2f2ee",
+   "ink": "#111111",
+   "glow": "#2f7bff",
+   "dark": false,
+   "rot": [
+    0.12,
+    -0.6,
+    0.0
+   ],
+   "fit": 1.75,
+   "y": 0.0,
+   "inspector": true
+  },
+  "blade": {
+   "file": "assets/models/blade.glb",
+   "title": "Flower Blade",
+   "word": "BLADE",
+   "kind": "Game Asset · PBR",
+   "blurb": "Low-poly sword baked from a high-poly sculpt, textured in a Marmoset / Substance PBR pipeline.",
+   "bg": "#ebe5d8",
+   "bg2": "#fbf8f1",
+   "ink": "#1b1b18",
+   "glow": "#9fb38a",
+   "dark": false,
+   "rot": [
+    0.0,
+    0.4,
+    -0.18
+   ],
+   "fit": 2.1,
+   "y": 0.0,
+   "tex": {
+    "map": "assets/tex/blade_albedo.jpg",
+    "orm": "assets/tex/blade_orm.jpg",
+    "normal": "assets/tex/blade_normal.png"
+   },
+   "inspector": true
+  },
+  "spray": {
+   "file": "assets/models/spray.glb",
+   "title": "Bold Orbit",
+   "word": "BOLD",
+   "kind": "Product Visual",
+   "blurb": "Body-spray can with brushed steel, graphic print and studio lighting.",
+   "bg": "#1a1a1a",
+   "bg2": "#3a3a3a",
+   "ink": "#f5f5f5",
+   "glow": "#ffffff",
+   "dark": true,
+   "rot": [
+    0.0,
+    -0.3,
+    0.0
+   ],
+   "fit": 1.6,
+   "y": 0.0,
+   "recolor": {
+    "metal body": "#1b1b1d",
+    "grey plastic": "#e8e8e8"
+   },
+   "inspector": true
+  },
+  "heydar": {
+   "file": "assets/models/heydar.glb",
+   "title": "Heydar Aliyev Center",
+   "word": "ZAHA",
+   "kind": "ArchViz",
+   "blurb": "A study of Zaha Hadid’s fluid landmark — continuous surfaces, baked PBR for real-time.",
+   "bg": "#d9d6cf",
+   "bg2": "#f4f2ed",
+   "ink": "#151515",
+   "glow": "#ffffff",
+   "dark": false,
+   "rot": [
+    0.0,
+    0.6,
+    0.0
+   ],
+   "fit": 3.5,
+   "y": 0.0,
+   "clay": true,
+   "inspector": true
+  }
+ },
+ "showroom": [
+  "oud",
+  "keyboard",
+  "chair",
+  "watch",
+  "dupas",
+  "blade",
+  "sofa",
+  "speaker"
+ ],
+ "featured": [
+  {
+   "id": "oud",
+   "cat": "Product Visuals",
+   "title": "J. Janan Oud",
+   "model": "oud",
+   "bg": "#140c07",
+   "ink": "#f3c48a",
+   "accent": "#e8892f",
+   "text": "3D recreation of Janan Oud by J. I chose it to challenge myself with the interaction between refractive glass, gold-leaf metallic textures and the deep amber tones of the fragrance — a deep dive into complex PBR layering and studio lighting for a premium, shelf-ready look.",
+   "tools": [
+    "Blender",
+    "Cycles",
+    "Photoshop"
+   ],
+   "specs": [
+    {
+     "label": "Tris",
+     "value": "110k"
+    },
+    {
+     "label": "Glass",
+     "value": "Refractive"
+    },
+    {
+     "label": "Engine",
+     "value": "Cycles"
+    }
+   ],
+   "images": [
+    "oud_front",
+    "oud_close",
+    "oud_45",
+    "oud_rasp",
+    "oud_top"
+   ],
+   "video": "",
+   "hidden": false
+  },
+  {
+   "id": "omen",
+   "cat": "Product Visuals",
+   "title": "HP Omen Encoder",
+   "model": "keyboard",
+   "bg": "#070606",
+   "ink": "#ffffff",
+   "accent": "#ff2433",
+   "text": "A 3D recreation of the HP OMEN Encoder mechanical gaming keyboard. The project focused on the intersection of industrial design and gaming aesthetics — specifically the tactile nature of mechanical hardware, down to every switch stem and LED.",
+   "tools": [
+    "Blender",
+    "Cycles",
+    "Photoshop",
+    "After Effects"
+   ],
+   "specs": [
+    {
+     "label": "Tris",
+     "value": "627k"
+    },
+    {
+     "label": "Shots",
+     "value": "5"
+    },
+    {
+     "label": "Views",
+     "value": "Exploded"
+    }
+   ],
+   "images": [
+    "omen_3",
+    "omen_exploded",
+    "omen_switch",
+    "omen_1"
+   ],
+   "video": "",
+   "hidden": false
+  },
+  {
+   "id": "dupas",
+   "cat": "Commercial",
+   "title": "Dupas Lumin",
+   "model": "dupas",
+   "bg": "#031819",
+   "ink": "#d7fffd",
+   "accent": "#3fe6ee",
+   "text": "Created a banner for Dupas Lumin for their website — CeRetinol serum bottles staged in a nocturnal set with chrome pearls and a glowing halo ring.",
+   "tools": [
+    "Blender",
+    "Photoshop"
+   ],
+   "specs": [
+    {
+     "label": "Client",
+     "value": "Dupas"
+    },
+    {
+     "label": "Use",
+     "value": "Web banner"
+    },
+    {
+     "label": "Ratio",
+     "value": "21:9"
+    }
+   ],
+   "images": [
+    "dupas"
+   ],
+   "video": "",
+   "hidden": false
+  },
+  {
+   "id": "speaker",
+   "cat": "Product Animation",
+   "title": "Kisonli Q22",
+   "model": "speaker",
+   "bg": "#1a1b1b",
+   "ink": "#f0f0f0",
+   "accent": "#7aa7ff",
+   "text": "A portable speaker reveal — macro detailing of the grille and controls, a fluid-simulated water splash and a short animated product film.",
+   "tools": [
+    "Blender",
+    "Mantaflow",
+    "After Effects"
+   ],
+   "specs": [
+    {
+     "label": "Tris",
+     "value": "457k"
+    },
+    {
+     "label": "Sim",
+     "value": "Liquid"
+    },
+    {
+     "label": "Film",
+     "value": "1080p"
+    }
+   ],
+   "images": [
+    "speaker_1",
+    "speaker_splash",
+    "speaker_black"
+   ],
+   "video": "speaker_anim",
+   "hidden": false
+  },
+  {
+   "id": "watch",
+   "cat": "Product Visuals",
+   "title": "Chrono Study",
+   "model": "watch",
+   "bg": "#c9cfd4",
+   "ink": "#0d1e33",
+   "accent": "#22578f",
+   "text": "A minimal wristwatch built to explore anisotropic brushed metal, a sunburst dial and glass reflections — rendered in two colourways.",
+   "tools": [
+    "Blender",
+    "Cycles"
+   ],
+   "specs": [
+    {
+     "label": "Tris",
+     "value": "226k"
+    },
+    {
+     "label": "Colourways",
+     "value": "2"
+    },
+    {
+     "label": "Engine",
+     "value": "Cycles"
+    }
+   ],
+   "images": [
+    "watch_blue",
+    "watch_green"
+   ],
+   "video": "",
+   "hidden": false
+  }
+ ],
+ "furniture": [
+  {
+   "id": "chair",
+   "title": "Crown Chair",
+   "model": "chair",
+   "poly": [
+    {
+     "label": "Low poly",
+     "value": "3.5k tris · 1.8k faces"
+    },
+    {
+     "label": "High poly",
+     "value": "45.4k tris · 22.7k faces"
+    },
+    {
+     "label": "Method",
+     "value": "Sub-D modelling"
+    }
+   ],
+   "stages": [
+    {
+     "label": "Final",
+     "image": "chair_tex"
+    },
+    {
+     "label": "In context",
+     "image": "chair_room"
+    },
+    {
+     "label": "Clay",
+     "image": "chair_clay"
+    },
+    {
+     "label": "High poly",
+     "image": "chair_hp"
+    },
+    {
+     "label": "Low poly",
+     "image": "chair_lp"
+    }
+   ],
+   "hidden": false
+  },
+  {
+   "id": "sofa",
+   "title": "Curved Sofa",
+   "model": "sofa",
+   "poly": [
+    {
+     "label": "Low poly",
+     "value": "15k tris · 7.6k faces"
+    },
+    {
+     "label": "High poly",
+     "value": "42k tris · 21.5k faces"
+    },
+    {
+     "label": "Method",
+     "value": "Sub-D modelling"
+    }
+   ],
+   "stages": [
+    {
+     "label": "Final",
+     "image": "sofa_front"
+    },
+    {
+     "label": "Top 45°",
+     "image": "sofa_45"
+    },
+    {
+     "label": "Wireframe",
+     "image": "sofa_wire"
+    },
+    {
+     "label": "UV flow",
+     "image": "sofa_uv"
+    },
+    {
+     "label": "Material ID",
+     "image": "sofa_matid"
+    },
+    {
+     "label": "Object ID",
+     "image": "sofa_objid"
+    }
+   ],
+   "hidden": false
+  }
+ ],
+ "environments": [
+  {
+   "id": "sakura",
+   "title": "Rakotzbrücke",
+   "sub": "Sakura edition",
+   "note": "Devil’s Bridge reimagined in full bloom",
+   "hidden": false
+  },
+  {
+   "id": "temple_angelic",
+   "title": "Angelic Temple",
+   "sub": "Environment",
+   "note": "Self-modelled assets, Botaniq & Substance Painter",
+   "hidden": false
+  },
+  {
+   "id": "konoha_1",
+   "title": "Hidden Leaf",
+   "sub": "Fan environment",
+   "note": "Village-scale set dressing & volumetrics",
+   "hidden": false
+  },
+  {
+   "id": "temple_abandoned",
+   "title": "Abandoned Temple",
+   "sub": "Environment",
+   "note": "Moss, ruin and god-rays",
+   "hidden": false
+  },
+  {
+   "id": "mist",
+   "title": "Enchanted Mist",
+   "sub": "Mood piece",
+   "note": "Colour-graded forest fog",
+   "hidden": false
+  },
+  {
+   "id": "milky",
+   "title": "Ethereal Journey",
+   "sub": "Night scene",
+   "note": "Milky-way path through the pines",
+   "hidden": false
+  },
+  {
+   "id": "glacier",
+   "title": "Glacier",
+   "sub": "Landscape",
+   "note": "Procedural ice shelves",
+   "hidden": false
+  },
+  {
+   "id": "cabin",
+   "title": "Cabin in the Woods",
+   "sub": "Landscape",
+   "note": "Scatter-heavy forest",
+   "hidden": false
+  },
+  {
+   "id": "flower_room",
+   "title": "Flower Room",
+   "sub": "Interior",
+   "note": "Lantern light & foliage",
+   "hidden": false
+  },
+  {
+   "id": "space",
+   "title": "Distant World",
+   "sub": "Sci-fi",
+   "note": "Planet-rise over still water",
+   "hidden": false
+  },
+  {
+   "id": "konoha_7",
+   "title": "Leaf Gate",
+   "sub": "Fan environment",
+   "note": "Entrance shot",
+   "hidden": false
+  },
+  {
+   "id": "neon_arches",
+   "title": "Neon Arches",
+   "sub": "Abstract",
+   "note": "Emissive geometry & reflections",
+   "hidden": false
+  },
+  {
+   "id": "canyon",
+   "title": "Lost Canyon",
+   "sub": "Abstract",
+   "note": "Monolith architecture",
+   "hidden": false
+  },
+  {
+   "id": "cat",
+   "title": "Cat & Butterfly",
+   "sub": "Story frame",
+   "note": "Shallow depth of field",
+   "hidden": false
+  }
+ ],
+ "compare": {
+  "title": "Rakotzbrücke, under the hood",
+  "note": "Drag the handle to peel the render back to its clay pass.",
+  "before": "rakotz_clay",
+  "after": "rakotz"
+ },
+ "archviz": {
+  "model": "heydar",
+  "title": "Heydar Aliyev Center",
+  "tag": "Live model · 182k tris",
+  "items": [
+   {
+    "id": "skyscraper",
+    "title": "Abstract Skyscraper",
+    "note": "An abstract archviz high-rise of curved passageways",
+    "hidden": false
+   },
+   {
+    "id": "glassroom",
+    "title": "Abstract Glass Room",
+    "note": "Glass, steel and a planted atrium",
+    "hidden": false
+   },
+   {
+    "id": "uniwall",
+    "title": "Panel Installation",
+    "note": "Mock-up for a university wall",
+    "hidden": false
+   },
+   {
+    "id": "dojo",
+    "title": "Dojo",
+    "note": "Interior lighting study",
+    "hidden": false
+   },
+   {
+    "id": "bed",
+    "title": "Marshmallow Bed",
+    "note": "Product-in-room visual",
+    "hidden": false
+   },
+   {
+    "id": "myroom",
+    "title": "Bedroom",
+    "note": "Warm interior",
+    "hidden": false
+   },
+   {
+    "id": "iso_room",
+    "title": "Isometric Bar",
+    "note": "Cut-away room",
+    "hidden": false
+   },
+   {
+    "id": "chair_room",
+    "title": "Crown Chair Set",
+    "note": "Furniture styling",
+    "hidden": false
+   }
+  ]
+ },
+ "reel": [
+  {
+   "id": "interior",
+   "title": "Interior Deco Installation",
+   "hidden": false
+  },
+  {
+   "id": "konoha",
+   "title": "Hidden Leaf — Shot 01",
+   "hidden": false
+  },
+  {
+   "id": "speaker_anim",
+   "title": "Kisonli Q22 Film",
+   "hidden": false
+  },
+  {
+   "id": "chair_turn",
+   "title": "Crown Chair Turntable",
+   "hidden": false
+  },
+  {
+   "id": "sofa_turn",
+   "title": "Curved Sofa Turntable",
+   "hidden": false
+  },
+  {
+   "id": "porsche",
+   "title": "Porsche Wet Road",
+   "hidden": false
+  },
+  {
+   "id": "cloth",
+   "title": "Cloth Simulation",
+   "hidden": false
+  }
+ ],
+ "more": [
+  {
+   "id": "r1",
+   "title": "Yamaha R1",
+   "cat": "Automotive",
+   "hidden": false
+  },
+  {
+   "id": "porsche",
+   "title": "Porsche 911",
+   "cat": "Automotive",
+   "hidden": false
+  },
+  {
+   "id": "huracan",
+   "title": "Huracán",
+   "cat": "Automotive",
+   "hidden": false
+  },
+  {
+   "id": "iphone_colors",
+   "title": "iPhone 11 Pro",
+   "cat": "Product",
+   "hidden": false
+  },
+  {
+   "id": "spray",
+   "title": "Bold Orbit",
+   "cat": "Product",
+   "hidden": false
+  },
+  {
+   "id": "diamond",
+   "title": "Sci-fi Core",
+   "cat": "Abstract",
+   "hidden": false
+  },
+  {
+   "id": "house",
+   "title": "Overgrown House",
+   "cat": "Environment",
+   "hidden": false
+  },
+  {
+   "id": "snowman",
+   "title": "Snowman",
+   "cat": "Stylised",
+   "hidden": false
+  },
+  {
+   "id": "tropical",
+   "title": "Tropical Hut",
+   "cat": "Environment",
+   "hidden": false
+  },
+  {
+   "id": "oud_rasp",
+   "title": "Janan × Raspberry",
+   "cat": "Product",
+   "hidden": false
+  }
+ ],
+ "toolkit": [
+  {
+   "title": "Modeling & Design",
+   "items": [
+    "Blender",
+    "ZBrush",
+    "Clo3D"
+   ]
+  },
+  {
+   "title": "Texturing & Post",
+   "items": [
+    "Substance Painter",
+    "Photoshop",
+    "Lightroom"
+   ]
+  },
+  {
+   "title": "Engine & Motion",
+   "items": [
+    "Unreal Engine",
+    "After Effects",
+    "Marmoset"
+   ]
+  }
+ ]
+}
