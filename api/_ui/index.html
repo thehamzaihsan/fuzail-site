@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Studio</title>
+<link rel="stylesheet" href="/admincontrol/ui/admin.css">
+<script type="importmap">{"imports":{"three":"/vendor/three.module.min.js","three/addons/":"/vendor/jsm/"}}</script>
+</head>
+<body>
+<div id="gate" class="gate" hidden></div>
+
+<div id="app" class="app" hidden>
+  <aside class="side">
+    <div class="brand"><b>FUZAIL</b><span>Studio</span></div>
+    <nav id="nav"></nav>
+    <div class="side__foot">
+      <a class="btn ghost sm" id="viewSite" href="/" target="_blank" rel="noopener noreferrer">View live site ↗</a>
+      <button class="btn ghost sm" id="lockBtn">Lock</button>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="top">
+      <div><p class="crumb" id="crumb"></p><h1 id="title"></h1></div>
+      <div class="top__actions">
+        <span class="dirty" id="dirty" hidden><i></i>Unsaved changes</span>
+        <button class="btn ghost" id="discardBtn" hidden>Discard</button>
+        <button class="btn primary" id="publishBtn" disabled>Publish</button>
+      </div>
+    </header>
+    <section id="view" class="view"></section>
+  </main>
+</div>
+
+<div id="drawer" class="drawer" aria-hidden="true"><div class="drawer__panel" id="drawerPanel"></div></div>
+<div id="modal" class="modal" aria-hidden="true"><div class="modal__box" id="modalBox"></div></div>
+<div id="toasts" class="toasts"></div>
+
+<script type="module" src="/admincontrol/ui/app.js"></script>
+</body>
+</html>
