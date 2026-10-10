@@ -19,13 +19,23 @@ class Handler(http.server.SimpleHTTPRequestHandler):
     def log_message(self, *a):
         pass
 
+    def send_head(self):
+        # never serve hidden files or server scripts
+        rel = self.path.split("?", 1)[0]
+        if "/." in rel or rel.lower().endswith((".py", ".bat", ".log", ".tmp")):
+            self.send_error(404); return None
+        return self._send_head()
+
     def end_headers(self):
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "strict-origin-when-cross-origin")
+        self.send_header("X-Frame-Options", "SAMEORIGIN")
         self.send_header("Cache-Control", "no-cache")
         self.send_header("Accept-Ranges", "bytes")
         super().end_headers()
 
     # minimal HTTP Range support so videos can seek / loop smoothly
-    def send_head(self):
+    def _send_head(self):
         rng = self.headers.get("Range")
         path = self.translate_path(self.path)
         if not rng or not os.path.isfile(path):
@@ -65,7 +75,8 @@ class Server(socketserver.ThreadingMixIn, http.server.HTTPServer):
 
 
 if __name__ == "__main__":
-    with Server(("0.0.0.0", PORT), Handler) as httpd:
+    host = "0.0.0.0" if "--lan" in sys.argv else "127.0.0.1"   # --lan lets phones on your Wi-Fi view the site
+    with Server((host, PORT), Handler) as httpd:
         url = f"http://localhost:{PORT}"
         print(f"Fuzail Ahmed — 3D portfolio running at {url}  (Ctrl+C to stop)")
         if "--no-browser" not in sys.argv:
