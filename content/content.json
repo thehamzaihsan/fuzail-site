@@ -1,5 +1,5 @@
 {
- "rev": 11,
+ "rev": 12,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -294,7 +294,6 @@
   "oud",
   "keyboard",
   "chair",
-  "watch",
   "dupas",
   "blade",
   "sofa",
@@ -573,7 +572,7 @@
  ],
  "environments": [
   {
-   "id": "sakura",
+   "id": "rakotz",
    "title": "Rakotzbrücke",
    "sub": "Sakura edition",
    "note": "Devil’s Bridge reimagined in full bloom",
@@ -594,17 +593,10 @@
    "hidden": false
   },
   {
-   "id": "temple_abandoned",
-   "title": "Abandoned Temple",
-   "sub": "Environment",
-   "note": "Moss, ruin and god-rays",
-   "hidden": false
-  },
-  {
-   "id": "mist",
-   "title": "Enchanted Mist",
-   "sub": "Mood piece",
-   "note": "Colour-graded forest fog",
+   "id": "konoha_7",
+   "title": "Leaf Gate",
+   "sub": "Fan environment",
+   "note": "Entrance shot",
    "hidden": false
   },
   {
@@ -643,13 +635,6 @@
    "hidden": false
   },
   {
-   "id": "konoha_7",
-   "title": "Leaf Gate",
-   "sub": "Fan environment",
-   "note": "Entrance shot",
-   "hidden": false
-  },
-  {
    "id": "neon_arches",
    "title": "Neon Arches",
    "sub": "Abstract",
@@ -657,10 +642,10 @@
    "hidden": false
   },
   {
-   "id": "canyon",
-   "title": "Lost Canyon",
-   "sub": "Abstract",
-   "note": "Monolith architecture",
+   "id": "temple_abandoned",
+   "title": "Abandoned Temple",
+   "sub": "Environment",
+   "note": "Moss, ruin and god-rays",
    "hidden": false
   },
   {
@@ -668,6 +653,13 @@
    "title": "Cat & Butterfly",
    "sub": "Story frame",
    "note": "Shallow depth of field",
+   "hidden": false
+  },
+  {
+   "id": "canyon",
+   "title": "Lost Canyon",
+   "sub": "Abstract",
+   "note": "Monolith architecture",
    "hidden": false
   }
  ],
@@ -766,7 +758,7 @@
   {
    "id": "cloth",
    "title": "Cloth Simulation",
-   "hidden": false
+   "hidden": true
   }
  ],
  "more": [
@@ -816,7 +808,7 @@
    "id": "snowman",
    "title": "Snowman",
    "cat": "Stylised",
-   "hidden": false
+   "hidden": true
   },
   {
    "id": "tropical",
