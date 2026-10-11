@@ -1,5 +1,5 @@
 {
- "rev": 4,
+ "rev": 9,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -478,7 +478,7 @@
     "watch_green"
    ],
    "video": "",
-   "hidden": false
+   "hidden": true
   }
  ],
  "furniture": [
