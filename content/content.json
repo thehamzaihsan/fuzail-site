@@ -1,5 +1,5 @@
 {
- "rev": 12,
+ "rev": 13,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -8,7 +8,8 @@
   "intro": "I am a digital creator focused on high-fidelity 3D execution. Whether I’m crafting hyper-realistic product animations or building entirely fictional, unimagined worlds, I bridge the gap between technical precision and cinematic atmosphere.",
   "intro2": "Driven by the aesthetics of modern games and film, I deconstruct complex objects to rebuild them with digital perfection — from grounded reality to the boundless reaches of imagination.",
   "claim1": "Technical precision.",
-  "claim2": "Cinematic atmosphere."
+  "claim2": "Cinematic atmosphere.",
+  "socials": []
  },
  "marquee": [
   "Blender",
@@ -288,6 +289,27 @@
    "y": 0.0,
    "clay": true,
    "inspector": true
+  },
+  "luna": {
+   "file": "assets/models/luna_ee10.glb",
+   "title": "Luna",
+   "word": "LUNA",
+   "kind": "Character Design",
+   "blurb": "",
+   "bg": "#fb8383",
+   "bg2": "#bf8888",
+   "ink": "#c02a2a",
+   "glow": "#ff0a16",
+   "dark": true,
+   "rot": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "fit": 1.8,
+   "y": 0.0,
+   "inspector": true,
+   "hidden": false
   }
  },
  "showroom": [
@@ -297,7 +319,8 @@
   "dupas",
   "blade",
   "sofa",
-  "speaker"
+  "speaker",
+  "luna"
  ],
  "featured": [
   {
@@ -847,6 +870,62 @@
     "After Effects",
     "Marmoset"
    ]
+  }
+ ],
+ "sections": [
+  {
+   "id": "work",
+   "nav": true,
+   "label": "Work"
+  },
+  {
+   "id": "furniture",
+   "nav": true,
+   "label": "Furniture"
+  },
+  {
+   "id": "environments",
+   "nav": true,
+   "label": "Environments"
+  },
+  {
+   "id": "archviz",
+   "nav": true,
+   "label": "ArchViz"
+  },
+  {
+   "id": "characters",
+   "custom": true,
+   "nav": true,
+   "label": "Characters",
+   "bg": "#121212",
+   "ink": "#f2ede4",
+   "theme": "dark",
+   "style": "grid",
+   "items": [
+    {
+     "id": "screenshot-2026-10-11-145257-ed7404",
+     "title": "Luna",
+     "note": "A cyberbuddy pet ",
+     "model": "luna",
+     "hidden": false
+    }
+   ]
+  },
+  {
+   "id": "reel",
+   "nav": true,
+   "label": "Motion"
+  },
+  {
+   "id": "more",
+   "nav": false,
+   "label": "Archive"
+  },
+  {
+   "id": "about",
+   "nav": true,
+   "label": "About"
   }
  ]
 }
