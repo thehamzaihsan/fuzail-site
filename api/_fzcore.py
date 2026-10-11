@@ -136,10 +136,20 @@ MODEL = O({
     "tex": O({"map": RX(TEX_PATH, "texture path"), "orm": RX(TEX_PATH, "texture path"), "normal": RX(TEX_PATH, "texture path")}),
     "recolor": D(re.compile(r"^.{1,80}$"), RX(COLOR, "colour"), 50), "clay": BOOL, "inspector": BOOL, "hidden": BOOL,
 }, ("file", "title"))
+LINK = RX(re.compile(r"^(https://|mailto:)[^\s<>\"'`]{1,300}$"), "link must start with https://")
+SOCIAL = O({"label": S(30, False), "url": LINK, "hidden": BOOL}, ("label", "url"))
+BUILTIN_SECTIONS = ("work", "furniture", "environments", "archviz", "reel", "more", "about")
+SECTION = O({
+    "id": IDV, "custom": BOOL, "hidden": BOOL, "nav": BOOL, "label": S(30), "eyebrow": S(60), "title": S(40), "title2": S(40), "copy": S(600),
+    "bg": RX(COLOR, "colour"), "ink": RX(COLOR, "colour"), "theme": RX(re.compile(r"^(dark|light)$"), "dark or light"),
+    "style": RX(re.compile(r"^(grid|scroll)$"), "grid or scroll"),
+    "items": L(O({"id": IDV, "title": S(80), "note": S(200), "model": RX(KEY, "model key", empty=True), "hidden": BOOL}, ("id",)), 120),
+}, ("id",))
 SCHEMA = O({
     "rev": NUM(0, 1e12),
     "artist": O({"name": S(80), "first": S(30), "role": S(60), "email": RX(re.compile(r"^[^@\s<>\"']{1,64}@[^@\s<>\"']{1,190}$"), "valid email"),
-                 "intro": S(1200), "intro2": S(1200), "claim1": S(80), "claim2": S(80)}),
+                 "intro": S(1200), "intro2": S(1200), "claim1": S(80), "claim2": S(80), "socials": L(SOCIAL, 12)}),
+    "sections": L(SECTION, 30),
     "marquee": L(S(40), 40),
     "highlights": L(S(40), 40),
     "models": D(KEY, MODEL, 120),
@@ -190,6 +200,15 @@ def validate(c, index):
     for k in ("before", "after"):
         v = c.get("compare", {}).get(k)
         if v and v not in img: errs.append(f"compare: image '{v}' missing")
+    seen = set()
+    for sec in c.get("sections", []):
+        if sec["id"] in seen: errs.append(f"sections: two sections share the id '{sec['id']}'")
+        seen.add(sec["id"])
+        if not sec.get("custom") and sec["id"] not in BUILTIN_SECTIONS: errs.append(f"sections: unknown built-in section '{sec['id']}'")
+        if sec.get("custom") and sec["id"] in BUILTIN_SECTIONS + ("hero", "statement", "contact", "top"): errs.append(f"sections: '{sec['id']}' is a reserved name")
+        for e in sec.get("items", []):
+            if e["id"] not in img: errs.append(f"{sec.get('label') or sec['id']}: image '{e['id']}' missing")
+            if e.get("model") and e["model"] not in models: errs.append(f"{sec.get('label') or sec['id']}: unknown model '{e['model']}'")
     ids = [p["id"] for p in c.get("featured", [])]
     if len(ids) != len(set(ids)): errs.append("featured: two projects share the same id")
     if errs: raise Invalid("; ".join(errs[:8]))
@@ -209,6 +228,8 @@ def usage(c):
     for e in c.get("archviz", {}).get("items", []): add("image", e["id"], "ArchViz")
     for e in c.get("more", []): add("image", e["id"], "Archive")
     for e in c.get("reel", []): add("video", e["id"], "Motion reel")
+    for sec in c.get("sections", []):
+        for e in sec.get("items", []): add("image", e["id"], sec.get("label") or sec["id"])
     for k in ("before", "after"): add("image", c.get("compare", {}).get(k), "Before/after slider")
     for k, m in c.get("models", {}).items(): add("model", m["file"][len("assets/models/"):-4], "3D model · " + m["title"])
     return used

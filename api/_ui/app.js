@@ -277,32 +277,56 @@ function touch() {
 }
 addEventListener('beforeunload', (e) => { if (C && dirty()) { e.preventDefault(); e.returnValue = ''; } });
 async function loadAll() {
-  C = await api('GET', '/api/content'); ORIG = JSON.stringify(C);
+  C = await api('GET', '/api/content'); normalize(C); ORIG = JSON.stringify(C);
   await refreshMedia();
 }
 async function refreshMedia() { MEDIA = await api('GET', '/api/media'); }
 const mediaMeta = (id) => MEDIA.images.find((m) => m.id === id) || {};
 
+/* ─────────────── sections (page order on the live site) ─────────────── */
+// built-in site sections → the dashboard page that edits them
+const BUILTIN = {
+  work: { page: 'featured', label: 'Products', site: 'Work', icon: 'folder' },
+  furniture: { page: 'furniture', label: 'Furniture', site: 'Furniture', icon: 'chair' },
+  environments: { page: 'environments', label: 'Environments', site: 'Environments', icon: 'mountain' },
+  archviz: { page: 'archviz', label: 'ArchViz', site: 'ArchViz', icon: 'building' },
+  reel: { page: 'reel', label: 'Motion reel', site: 'Motion', icon: 'film' },
+  more: { page: 'more', label: 'Archive', site: 'Archive', icon: 'grid', nav: false },
+  about: { page: 'about', label: 'About & contact', site: 'About', icon: 'user' },
+};
+function normalize(c) {
+  const list = Array.isArray(c.sections) ? c.sections : [];
+  const have = new Set(list.map((x) => x.id));
+  Object.entries(BUILTIN).forEach(([id, b]) => { if (!have.has(id)) list.push({ id, label: b.site, nav: b.nav !== false }); });
+  c.sections = list;
+  c.artist.socials = c.artist.socials || [];
+}
+const secName = (s) => (s.custom ? s.label || s.title || 'Untitled section' : BUILTIN[s.id]?.label || s.id);
+
 /* ─────────────── navigation ─────────────── */
-const PAGES = [
-  ['grp', 'Content'],
-  ['overview', 'Overview', 'home'], ['featured', 'Projects', 'folder'], ['models', '3D Models', 'cube'], ['furniture', 'Furniture', 'chair'],
-  ['environments', 'Environments', 'mountain'], ['archviz', 'ArchViz', 'building'], ['reel', 'Motion reel', 'film'], ['more', 'Archive', 'grid'], ['about', 'About & contact', 'user'],
-  ['grp', 'Library'], ['media', 'Media library', 'image'],
-  ['grp', 'System'], ['history', 'History', 'clock'], ['security', 'Security', 'shield'],
-];
+function pages() {
+  const content = [['overview', 'Overview', 'home'], ['sections', 'Page layout', 'drag'], ['models', '3D Models', 'cube']];
+  (C ? C.sections : Object.keys(BUILTIN).map((id) => ({ id }))).forEach((s) => {
+    if (s.custom) content.push(['sec:' + s.id, secName(s), 'image', s.hidden]);
+    else if (BUILTIN[s.id]) content.push([BUILTIN[s.id].page, BUILTIN[s.id].label, BUILTIN[s.id].icon, s.hidden]);
+  });
+  return [['grp', 'Content'], ...content, ['grp', 'Library'], ['media', 'Media library', 'image'], ['grp', 'System'], ['history', 'History', 'clock'], ['security', 'Security', 'shield']];
+}
 const COUNT = { featured: () => C.featured.length, models: () => Object.keys(C.models).length, furniture: () => C.furniture.length, environments: () => C.environments.length, archviz: () => C.archviz.items.length, reel: () => C.reel.length, more: () => C.more.length };
+const count = (k) => (k.startsWith('sec:') ? (C.sections.find((s) => 'sec:' + s.id === k)?.items || []).length : COUNT[k] ? COUNT[k]() : 0);
 function renderNav() {
-  $('#nav').innerHTML = PAGES.map(([k, l, ic]) => k === 'grp' ? `<div class="grp">${l}</div>` :
-    `<button data-p="${k}" class="${PAGE === k ? 'on' : ''}">${ICON[ic]}<span>${l}</span>${COUNT[k] ? `<span class="n">${COUNT[k]()}</span>` : ''}</button>`).join('');
+  $('#nav').innerHTML = pages().map(([k, l, ic, off]) => k === 'grp' ? `<div class="grp">${l}</div>` :
+    `<button data-p="${esc(k)}" class="${PAGE === k ? 'on' : ''}" ${off ? 'style="opacity:.5" title="Hidden on the site"' : ''}>${ICON[ic]}<span>${esc(l)}</span>${count(k) ? `<span class="n">${count(k)}</span>` : ''}</button>`).join('');
 }
 $('#nav').addEventListener('click', (e) => { const b = e.target.closest('[data-p]'); if (b) go(b.dataset.p); });
 function go(p) {
   PAGE = p; renderNav();
-  const def = PAGES.find((x) => x[0] === p);
+  let def = pages().find((x) => x[0] === p);
+  if (!def) { p = PAGE = 'overview'; def = pages().find((x) => x[0] === p); renderNav(); }
   $('#title').textContent = def[1]; $('#crumb').textContent = 'Studio / ' + def[1];
   const v = $('#view'); v.innerHTML = '';
-  (VIEWS[p] || (() => {}))(v);
+  if (p.startsWith('sec:')) customSectionPage(v, p.slice(4));
+  else (VIEWS[p] || (() => {}))(v);
   window.scrollTo(0, 0);
 }
 
@@ -702,7 +726,122 @@ function colourHelper(obj, imgKey, keys = ['bg', 'ink', 'accent']) {
 /* ─────────────── views ─────────────── */
 const modelOpts = (none = true) => () => [...(none ? [['', '— No 3D model —']] : []), ...Object.entries(C.models).map(([k, m]) => [k, m.title])];
 
+/* ─────────────── page layout (sections) ─────────────── */
+const VIEWS_EXTRA = {};
+const SEC_HEAD = [
+  { t: 'row', fields: [{ k: 'label', label: 'Name in the site menu', t: 'text', max: 30 }, { k: 'eyebrow', label: 'Small label above the heading', t: 'text', max: 60, ph: 'e.g. Character design' }] },
+  { t: 'row', fields: [{ k: 'title', label: 'Big heading (line 1)', t: 'text', max: 40, ph: 'Leave empty to keep the current one' }, { k: 'title2', label: 'Outlined line 2', t: 'text', max: 40 }] },
+  { k: 'copy', label: 'Paragraph next to the heading', t: 'textarea', max: 600, rows: 3 },
+  { k: 'nav', label: 'Show in the site’s top menu', t: 'toggle' },
+  { k: 'hidden', label: 'Show this section on the live site', t: 'toggle', invert: true },
+];
+const SEC_CUSTOM = [
+  { t: 'row', fields: [{ k: 'style', label: 'Layout', t: 'select', opts: () => [['grid', 'Grid — mixed sizes (like ArchViz)'], ['scroll', 'Sideways row of tall cards']] },
+    { k: 'theme', label: 'Text style', t: 'select', opts: () => [['dark', 'Light text on dark'], ['light', 'Dark text on light']] }] },
+  { t: 'row', fields: [{ k: 'bg', label: 'Background colour', t: 'color' }, { k: 'ink', label: 'Text colour', t: 'color' }] },
+];
+const RESERVED = ['hero', 'statement', 'contact', 'top'];
+function sectionDrawer(sec, isNew, after) {
+  editDrawer({
+    title: isNew ? 'New section' : 'Section · ' + secName(sec), item: sec,
+    fields: sec.custom ? [...SEC_HEAD, ...SEC_CUSTOM] : SEC_HEAD,
+    onSave: (d) => {
+      if (d.custom && !d.label && !d.title) { toast('Give the section a name', 'bad'); return false; }
+      Object.keys(d).forEach((k) => { if (d[k] === '' && k !== 'id') delete d[k]; });
+      if (!d.hidden) delete d.hidden;
+      if (isNew) {
+        const base = (d.label || d.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'section';
+        let id = base, n = 2;
+        while (C.sections.some((x) => x.id === id) || BUILTIN[id] || RESERVED.includes(id)) id = `${base}-${n++}`;
+        d.id = id; C.sections.push(d);
+      } else { Object.keys(sec).forEach((k) => delete sec[k]); Object.assign(sec, d); }
+      renderNav(); after && after(isNew ? d : sec);
+    },
+    onDelete: sec.custom && !isNew ? () => { C.sections.splice(C.sections.indexOf(sec), 1); renderNav(); go('sections'); } : null,
+  });
+}
+VIEWS_EXTRA.sections = (v) => {
+  v.appendChild(el(`<p class="muted" style="margin:-6px 0 18px;max-width:780px">The order of the sections on your live site. Drag to move them. Add your own sections (e.g. Characters, Vehicles) and drop them anywhere — the site and this sidebar follow the same order.</p>`));
+  const bar = el(`<div class="toolbar"><span class="spacer"></span><button class="btn primary" data-new>${ICON.plus} Add section</button></div>`);
+  const list = el(`<div class="list"></div>`);
+  v.append(bar, list, el(`<p class="muted" style="margin-top:14px;font-size:12.5px">The 3D showroom and statement at the top, and the contact block at the bottom, stay in place.</p>`));
+  const draw = () => {
+    list.innerHTML = C.sections.map((s, i) => `<div class="row ${s.hidden ? 'is-hidden' : ''}" data-i="${i}"><span class="handle" title="Drag to reorder">${ICON.drag}</span>
+      <div class="th sicon" style="display:grid;place-items:center;color:var(--mut)">${ICON[s.custom ? 'image' : BUILTIN[s.id]?.icon || 'grid']}</div>
+      <div class="t"><b>${esc(secName(s))}${s.hidden ? '<span class="badge">Hidden</span>' : ''}${s.custom ? '<span class="badge">Custom</span>' : ''}</b>
+      <span>${esc(s.custom ? `${(s.items || []).length} image(s) · ${s.style === 'scroll' ? 'sideways row' : 'grid'}` : 'Built-in section')}${s.nav === false ? ' · not in menu' : ''}</span></div>
+      <div class="acts"><button class="icon-btn" data-a="vis" title="${s.hidden ? 'Show on site' : 'Hide from site'}">${s.hidden ? ICON.eyeoff : ICON.eye}</button>
+      <button class="icon-btn" data-a="open" title="Edit content">${ICON.folder}</button><button class="icon-btn" data-a="edit" title="Heading & settings">${ICON.edit}</button></div></div>`).join('');
+  };
+  list.addEventListener('click', (e) => {
+    const row = e.target.closest('.row'); if (!row || e.target.closest('.handle')) return;
+    const s = C.sections[+row.dataset.i], a = e.target.closest('[data-a]');
+    if (a && a.dataset.a === 'vis') { s.hidden = !s.hidden; if (!s.hidden) delete s.hidden; draw(); renderNav(); touch(); return; }
+    if (a && a.dataset.a === 'open') return go(s.custom ? 'sec:' + s.id : BUILTIN[s.id].page);
+    sectionDrawer(s, false, draw);
+  });
+  $('[data-new]', bar).onclick = () => sectionDrawer({ custom: true, label: '', title: '', title2: '', eyebrow: '', copy: '', style: 'grid', theme: 'dark', bg: '#121212', ink: '#f2ede4', nav: true, items: [] }, true, (d) => { draw(); toast('Section added at the end — drag it where you want it', 'ok'); });
+  sortable(list, '.row', (a, b) => { move(C.sections, a, b); draw(); renderNav(); touch(); });
+  draw();
+};
+
+function customSectionPage(v, id) {
+  const sec = C.sections.find((s) => s.id === id); if (!sec) return go('sections');
+  sec.items = sec.items || [];
+  const head = el(`<div class="panel" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap"><div style="flex:1;min-width:220px"><h3 style="margin:0">${esc(secName(sec))}</h3>
+    <p style="margin:4px 0 0">${esc([sec.title, sec.title2].filter(Boolean).join(' ') || 'No heading yet')} · ${sec.style === 'scroll' ? 'Sideways row' : 'Grid'}${sec.hidden ? ' · hidden on the site' : ''}</p></div>
+    <button class="btn" data-a="set">${ICON.edit} Heading, colours & layout</button><button class="btn ghost" data-a="order">${ICON.drag} Move section</button></div>`);
+  $('[data-a=set]', head).onclick = () => sectionDrawer(sec, false, () => go('sec:' + sec.id));
+  $('[data-a=order]', head).onclick = () => go('sections');
+  v.appendChild(head);
+  listPage(v, {
+    get: () => sec.items, newLabel: 'New image', newItem: () => ({ id: '', title: '', note: '', model: '', hidden: false }),
+    bulk: (iid) => ({ id: iid, title: iid.replace(/[-_][0-9a-f]{6}$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()), note: '', hidden: false }),
+    check: (d) => (!d.id ? 'Pick an image first' : ''),
+    beforeSave: (d) => { if (!d.model) delete d.model; },
+    thumb: (e) => e.id, label: (e) => e.title, sub: (e) => [e.note, e.model && C.models[e.model] ? '3D: ' + C.models[e.model].title : ''].filter(Boolean).join(' · '),
+    fields: () => [{ k: 'id', label: 'Image', t: 'image' }, { t: 'row', fields: [{ k: 'title', label: 'Title', t: 'text', max: 80 }, { k: 'note', label: 'Caption', t: 'text', max: 200 }] },
+      { k: 'model', label: '3D model (optional — adds a “3D” button)', t: 'select', opts: modelOpts() }, { k: 'hidden', label: 'Show on the live site', t: 'toggle', invert: true }],
+  });
+}
+
+const SOCIAL_PRESETS = [['Instagram', 'https://instagram.com/'], ['ArtStation', 'https://www.artstation.com/'], ['GitHub', 'https://github.com/'], ['Behance', 'https://www.behance.net/'], ['LinkedIn', 'https://www.linkedin.com/in/'], ['X', 'https://x.com/'], ['YouTube', 'https://www.youtube.com/@'], ['Sketchfab', 'https://sketchfab.com/']];
+function socialsPanel() {
+  const p = el(`<div class="panel"><h3>Social links</h3><p>Shown as buttons in the About section. Full links starting with https://. Drag to reorder.</p><div class="list" id="soc"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:12px" id="socAdd"></div></div>`);
+  const list = $('#soc', p), S = C.artist.socials;
+  const draw = () => {
+    list.innerHTML = S.map((x, i) => `<div class="row soc ${x.hidden ? 'is-hidden' : ''}" data-i="${i}"><span class="handle" title="Drag to reorder">${ICON.drag}</span>
+      <input type="text" maxlength="30" value="${esc(x.label)}" data-f="label" placeholder="Name">
+      <input type="url" maxlength="300" value="${esc(x.url)}" data-f="url" placeholder="https://…">
+      <div class="acts"><button class="icon-btn" data-a="vis" title="${x.hidden ? 'Show' : 'Hide'}">${x.hidden ? ICON.eyeoff : ICON.eye}</button><button class="icon-btn" data-a="del" title="Remove">${ICON.trash}</button></div></div>`).join('')
+      || '<div class="empty">No social links yet — add one below.</div>';
+  };
+  list.addEventListener('input', (e) => {
+    const f = e.target.dataset.f; if (!f) return;
+    const x = S[+e.target.closest('.row').dataset.i]; x[f] = e.target.value.trim();
+    e.target.classList.toggle('bad', f === 'url' && !!x.url && !/^(https:\/\/|mailto:)\S+$/.test(x.url)); touch();
+  });
+  list.addEventListener('click', (e) => {
+    const a = e.target.closest('[data-a]'); if (!a) return; const i = +a.closest('.row').dataset.i;
+    if (a.dataset.a === 'del') S.splice(i, 1); else { S[i].hidden = !S[i].hidden; if (!S[i].hidden) delete S[i].hidden; }
+    draw(); touch();
+  });
+  $('#socAdd', p).innerHTML = SOCIAL_PRESETS.map(([n]) => `<button class="btn xs ghost" data-n="${esc(n)}">${ICON.plus} ${esc(n)}</button>`).join('') + `<button class="btn xs ghost" data-n="">${ICON.plus} Other link</button>`;
+  $('#socAdd', p).onclick = (e) => {
+    const b = e.target.closest('[data-n]'); if (!b) return;
+    if (S.length >= 12) return toast('Up to 12 links', 'bad');
+    const pr = SOCIAL_PRESETS.find(([n]) => n === b.dataset.n);
+    S.push({ label: pr ? pr[0] : 'Website', url: pr ? pr[1] : 'https://' }); draw(); touch();
+    const inp = $$('input[data-f=url]', list).pop(); if (inp) { inp.focus(); inp.setSelectionRange(inp.value.length, inp.value.length); }
+  };
+  sortable(list, '.row', (a, b) => { move(S, a, b); draw(); touch(); });
+  draw();
+  return p;
+}
+
 const VIEWS = {
+  ...VIEWS_EXTRA,
   async overview(v) {
     const st = (n, l) => `<div class="stat"><b>${n}</b><span>${l}</span></div>`;
     v.innerHTML = `<div class="stats">${st(C.featured.filter((x) => !x.hidden).length, 'Live projects')}${st(Object.keys(C.models).length, '3D models')}${st(MEDIA.images.length, 'Images')}${st(MEDIA.videos.length, 'Videos')}</div>
@@ -731,7 +870,7 @@ const VIEWS = {
   featured(v) {
     listPage(v, {
       intro: 'The big colour-matched case studies under “Selected work”. Each one gets its own background colour, gallery and optional 3D model.',
-      get: () => C.featured, newLabel: 'New project',
+      get: () => C.featured, newLabel: 'New product',
       newItem: () => ({ id: '', cat: 'Product Visuals', title: '', model: '', bg: '#141414', ink: '#f2ede4', accent: '#ff5a1f', text: '', tools: ['Blender'], specs: [], images: [], video: '', hidden: false }),
       beforeSave: (d, isNew) => { if (isNew || !d.id) d.id = slugId(d.title || 'project', new Set(C.featured.map((p) => p.id))); },
       check: (d) => (!d.title.trim() ? 'Give the project a title' : ''),
@@ -739,7 +878,7 @@ const VIEWS = {
       badge: (p) => (!p.images.length ? '<span class="badge warn">No images</span>' : ''),
       fields: () => [
         { t: 'section', label: 'Story' },
-        { k: 'title', label: 'Project title', t: 'text', max: 80, ph: 'e.g. J. Janan Oud' },
+        { k: 'title', label: 'Product title', t: 'text', max: 80, ph: 'e.g. J. Janan Oud' },
         { t: 'row', fields: [{ k: 'cat', label: 'Category', t: 'text', max: 60, list: () => [...new Set(C.featured.map((p) => p.cat))] }, { k: 'model', label: '3D model (optional)', t: 'select', opts: modelOpts() }] },
         { k: 'text', label: 'Description', t: 'textarea', max: 2000, rows: 6 },
         { k: 'tools', label: 'Software used', t: 'tags', ph: 'Blender, Substance Painter…' },
@@ -856,7 +995,7 @@ const VIEWS = {
       });
       if (C.toolkit.length < 6) { const a = el(`<button class="btn xs ghost">${ICON.plus} Add group</button>`); a.onclick = () => { C.toolkit.push({ title: 'New group', items: [] }); touch(); drawTk(); }; tk.appendChild(a); }
     };
-    v.append(p1, p2, p3); drawTk();
+    v.append(p1, socialsPanel(), p2, p3); drawTk();
   },
 
   async media(v) {

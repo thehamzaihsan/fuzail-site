@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { Stage, manager, loadGLTF, setColorway, setMode, explode } from './stage.js';
-import { ARTIST, MODELS, SHOWROOM, FEATURED, FURNITURE, ENVIRONMENTS, COMPARE, ARCHVIZ, MORE, REEL, TOOLKIT, MARQUEE, HIGHLIGHTS } from './data.js';
+import { ARTIST, MODELS, SHOWROOM, FEATURED, FURNITURE, ENVIRONMENTS, COMPARE, ARCHVIZ, MORE, REEL, TOOLKIT, MARQUEE, HIGHLIGHTS, SECTIONS, BUILTIN_SECTIONS, SOCIALS } from './data.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
@@ -16,6 +16,47 @@ let MEDIA = {};
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const col = (v, d = '#888888') => (/^#[0-9a-f]{3,8}$/i.test(v || '') ? v : d);
 const sid = (v) => String(v ?? '').replace(/[^a-z0-9_-]/gi, '');
+
+/* ───────────── sections: order, headings, custom sections (all set in the dashboard) ───────────── */
+const lbCustom = {};
+(() => {
+  const mainEl = $('main'), contactEl = $('#contact');
+  const BUILT = Object.fromEntries(BUILTIN_SECTIONS.map((b) => [b.id, b]));
+  const nav = [];
+  const head = (el, sec) => {
+    const eb = $('.eyebrow', el), mega = $('.mega', el), copy = $('.sechead__copy', el);
+    if (sec.eyebrow && eb) eb.textContent = `( ${sec.eyebrow} )`;
+    if (sec.title && mega) mega.innerHTML = esc(sec.title) + (sec.title2 ? `<br><span class="outline">${esc(sec.title2)}</span>` : '');
+    if (sec.copy && copy) copy.textContent = sec.copy;
+  };
+  const custom = (sec) => {
+    const id = 'x-' + sid(sec.id);
+    const items = (sec.items || []).filter((x) => x && !x.hidden);
+    const s = document.createElement('section');
+    s.className = 'csec ' + (sec.style === 'scroll' ? 'csec--scroll' : 'csec--grid'); s.id = id;
+    Object.assign(s.dataset, { bg: col(sec.bg, '#111111'), ink: col(sec.ink, '#f2ede4'), theme: sec.theme === 'light' ? 'light' : 'dark' });
+    const label = sec.label || sec.title || 'Work';
+    s.innerHTML = `<div class="sechead sechead--row"><div><p class="eyebrow">( ${esc(sec.eyebrow || label)} )</p>
+      <h2 class="mega">${esc(sec.title || label)}${sec.title2 ? `<br><span class="outline">${esc(sec.title2)}</span>` : ''}</h2></div>
+      ${sec.copy ? `<p class="sechead__copy">${esc(sec.copy)}</p>` : ''}</div>
+      <div class="${sec.style === 'scroll' ? 'csec__row' : 'arch__grid csec__grid'}">${items.map((a, i) => `<figure class="shot reveal-img" data-lb="${id}" data-i="${i}"><img src="${img(sid(a.id))}" alt="${esc(a.title || label)}" loading="lazy">${a.title || a.note ? `<div class="cap"><h4>${esc(a.title)}</h4><p>${esc(a.note)}</p></div>` : ''}${a.model && MODELS[a.model] ? `<button class="csec__3d" data-model="${esc(a.model)}" data-cursor="Open" aria-label="Inspect in 3D">3D</button>` : ''}</figure>`).join('')}</div>`;
+    lbCustom[id] = items.map((a) => ({ type: 'img', src: img(sid(a.id)), cap: [a.title, a.note].filter(Boolean).join(' — ') || label }));
+    return s;
+  };
+  SECTIONS.forEach((sec) => {
+    if (!sec || !sec.id) return;
+    let el;
+    if (sec.custom) el = custom(sec);
+    else { el = document.getElementById(sec.id); if (!el || !BUILT[sec.id]) return; head(el, sec); }
+    mainEl.insertBefore(el, contactEl);
+    if (sec.hidden) { el.style.display = 'none'; el.dataset.off = '1'; return; }
+    const show = sec.nav ?? (sec.custom ? true : BUILT[sec.id].nav);
+    if (show) nav.push([el.id, sec.label || (BUILT[sec.id] || {}).label || sec.title || sec.id]);
+  });
+  const links = nav.map(([id, l]) => `<a href="#${esc(id)}" data-link>${esc(l)}</a>`).join('');
+  $('.nav__links').innerHTML = links;
+  $('#menu').innerHTML = links + '<a href="#contact" data-link>Contact</a>';
+})();
 
 /* ───────────── smooth scroll ───────────── */
 const lenis = new window.Lenis({ lerp: 0.09, smoothWheel: true });
@@ -163,7 +204,7 @@ gsap.to('#statementText .w', { opacity: 1, stagger: 0.05, ease: 'none', scrollTr
 
 /* ═════════════ FEATURED PROJECTS ═════════════ */
 const featured = $('#featured');
-const lbSets = {};
+const lbSets = { ...lbCustom };
 FEATURED.forEach((p, pi) => {
   p = { ...p, id: sid(p.id), model: MODELS[p.model] ? p.model : '', bg: col(p.bg, '#111111'), ink: col(p.ink, '#ffffff'), accent: col(p.accent, '#ff5a1f'), images: (p.images || []).map(sid), video: sid(p.video), no: String(pi + 1).padStart(2, '0') };
   const s = document.createElement('article');
@@ -355,6 +396,8 @@ $('#filters').addEventListener('click', (e) => {
 $('#aboutText').textContent = ARTIST.intro;
 $('#aboutText2').textContent = ARTIST.intro2;
 $('#toolkit').innerHTML = TOOLKIT.map((g) => `<div><h4>${esc(g.title)}</h4><ul>${(g.items || []).map((t) => `<li>${esc(t)}</li>`).join('')}</ul></div>`).join('');
+$('#socials').innerHTML = SOCIALS.map((x) => `<a class="pill pill--ghost" href="${esc(x.url)}" target="_blank" rel="noopener noreferrer me">${esc(x.label)} <span class="arrow">↗</span></a>`).join('');
+$('#socials').hidden = !SOCIALS.length;
 $('#mailText').textContent = ARTIST.email;
 $('#mailLink').href = 'mailto:' + ARTIST.email;
 $('#year').textContent = new Date().getFullYear();
