@@ -798,10 +798,12 @@ function customSectionPage(v, id) {
     get: () => sec.items, newLabel: 'New image', newItem: () => ({ id: '', title: '', note: '', model: '', hidden: false }),
     bulk: (iid) => ({ id: iid, title: iid.replace(/[-_][0-9a-f]{6}$/, '').replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()), note: '', hidden: false }),
     check: (d) => (!d.id ? 'Pick an image first' : ''),
-    beforeSave: (d) => { if (!d.model) delete d.model; },
-    thumb: (e) => e.id, label: (e) => e.title, sub: (e) => [e.note, e.model && C.models[e.model] ? '3D: ' + C.models[e.model].title : ''].filter(Boolean).join(' · '),
+    beforeSave: (d) => { if (!d.model) delete d.model; if (d.gallery && !d.gallery.length) delete d.gallery; },
+    thumb: (e) => e.id, label: (e) => e.title, sub: (e) => [e.note, e.model && C.models[e.model] ? '3D: ' + C.models[e.model].title : '', (e.gallery || []).length ? `+${e.gallery.length} renders` : ''].filter(Boolean).join(' · '),
     fields: () => [{ k: 'id', label: 'Image', t: 'image' }, { t: 'row', fields: [{ k: 'title', label: 'Title', t: 'text', max: 80 }, { k: 'note', label: 'Caption', t: 'text', max: 200 }] },
-      { k: 'model', label: '3D model (optional — adds a “3D” button)', t: 'select', opts: modelOpts() }, { k: 'hidden', label: 'Show on the live site', t: 'toggle', invert: true }],
+      { k: 'model', label: '3D model (optional — clicking the card opens it in 3D)', t: 'select', opts: modelOpts() },
+      { k: 'gallery', label: 'More renders — shown under the 3D model when you scroll down', t: 'images', maxItems: 40, help: 'Drag to reorder. These appear in the gallery below the 3D view (and in the full-screen viewer).' },
+      { k: 'hidden', label: 'Show on the live site', t: 'toggle', invert: true }],
   });
 }
 
@@ -1262,6 +1264,8 @@ function modelEditor(key, redraw, info0) {
         { k: 'fabric', label: 'Fabric materials (tinted by colourways)', t: 'checks', opts: () => inf.materials },
         { k: 'glass', label: 'Clear glass materials', t: 'checks', opts: () => inf.materials, help: 'Forces see-through glass (e.g. a watch crystal).' },
         { k: 'hide', label: 'Hide these parts', t: 'checks', opts: () => inf.meshes, help: 'Hide text, stands or helper objects that came along in the export.' },
+        ...((inf.animations || []).length ? [{ t: 'section', label: 'Animation' }, { k: 'anim', label: 'Animation that plays on the site', t: 'select',
+          opts: () => [['', 'Automatic (Idle if there is one)'], ...inf.animations.map((a) => [a, a]), ['none', 'None — rest pose']] }] : []),
       ], draft, onChange));
     };
     renderChecks();

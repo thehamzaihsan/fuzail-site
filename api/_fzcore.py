@@ -134,7 +134,7 @@ MODEL = O({
     "dark": BOOL, "rot": L(NUM(-7, 7), fixed=3), "fit": NUM(0.2, 10), "y": NUM(-3, 3), "explode": BOOL,
     "hide": L(S(80), 100), "glass": L(S(80), 50), "fabric": L(S(80), 50), "swatches": L(SWATCH, 12),
     "tex": O({"map": RX(TEX_PATH, "texture path"), "orm": RX(TEX_PATH, "texture path"), "normal": RX(TEX_PATH, "texture path")}),
-    "recolor": D(re.compile(r"^.{1,80}$"), RX(COLOR, "colour"), 50), "clay": BOOL, "inspector": BOOL, "hidden": BOOL,
+    "recolor": D(re.compile(r"^.{1,80}$"), RX(COLOR, "colour"), 50), "clay": BOOL, "anim": S(80), "inspector": BOOL, "hidden": BOOL,
 }, ("file", "title"))
 LINK = RX(re.compile(r"^(https://|mailto:)[^\s<>\"'`]{1,300}$"), "link must start with https://")
 SOCIAL = O({"label": S(30, False), "url": LINK, "hidden": BOOL}, ("label", "url"))
@@ -143,7 +143,7 @@ SECTION = O({
     "id": IDV, "custom": BOOL, "hidden": BOOL, "nav": BOOL, "label": S(30), "eyebrow": S(60), "title": S(40), "title2": S(40), "copy": S(600),
     "bg": RX(COLOR, "colour"), "ink": RX(COLOR, "colour"), "theme": RX(re.compile(r"^(dark|light)$"), "dark or light"),
     "style": RX(re.compile(r"^(grid|scroll)$"), "grid or scroll"),
-    "items": L(O({"id": IDV, "title": S(80), "note": S(200), "model": RX(KEY, "model key", empty=True), "hidden": BOOL}, ("id",)), 120),
+    "items": L(O({"id": IDV, "title": S(80), "note": S(200), "model": RX(KEY, "model key", empty=True), "gallery": L(IDV, 40), "hidden": BOOL}, ("id",)), 120),
 }, ("id",))
 SCHEMA = O({
     "rev": NUM(0, 1e12),
@@ -207,7 +207,8 @@ def validate(c, index):
         if not sec.get("custom") and sec["id"] not in BUILTIN_SECTIONS: errs.append(f"sections: unknown built-in section '{sec['id']}'")
         if sec.get("custom") and sec["id"] in BUILTIN_SECTIONS + ("hero", "statement", "contact", "top"): errs.append(f"sections: '{sec['id']}' is a reserved name")
         for e in sec.get("items", []):
-            if e["id"] not in img: errs.append(f"{sec.get('label') or sec['id']}: image '{e['id']}' missing")
+            for g in [e["id"]] + e.get("gallery", []):
+                if g not in img: errs.append(f"{sec.get('label') or sec['id']}: image '{g}' missing")
             if e.get("model") and e["model"] not in models: errs.append(f"{sec.get('label') or sec['id']}: unknown model '{e['model']}'")
     ids = [p["id"] for p in c.get("featured", [])]
     if len(ids) != len(set(ids)): errs.append("featured: two projects share the same id")
@@ -229,7 +230,8 @@ def usage(c):
     for e in c.get("more", []): add("image", e["id"], "Archive")
     for e in c.get("reel", []): add("video", e["id"], "Motion reel")
     for sec in c.get("sections", []):
-        for e in sec.get("items", []): add("image", e["id"], sec.get("label") or sec["id"])
+        for e in sec.get("items", []):
+            for g in [e["id"]] + e.get("gallery", []): add("image", g, sec.get("label") or sec["id"])
     for k in ("before", "after"): add("image", c.get("compare", {}).get(k), "Before/after slider")
     for k, m in c.get("models", {}).items(): add("model", m["file"][len("assets/models/"):-4], "3D model · " + m["title"])
     return used

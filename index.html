@@ -263,7 +263,8 @@
 </main>
 
 <!-- ░░ 3D INSPECTOR ░░ -->
-<div class="inspector" id="inspector" aria-hidden="true" role="dialog" aria-label="3D model inspector">
+<div class="inspector" id="inspector" aria-hidden="true" role="dialog" aria-label="3D model inspector" data-lenis-prevent>
+  <div class="inspector__screen">
   <div class="inspector__bg" id="inspBg"></div>
   <div class="inspector__word" id="inspWord"></div>
   <div class="inspector__canvas" data-cursor="Orbit"><canvas id="inspCanvas"></canvas></div>
@@ -291,7 +292,10 @@
     </div>
   </aside>
   <div class="inspector__models" id="inspModels"></div>
-  <p class="inspector__hint">Drag to orbit · Scroll to zoom · Esc to close</p>
+  <p class="inspector__hint" id="inspHint">Drag to orbit · Scroll to zoom · Esc to close</p>
+  <button class="inspector__more pill pill--solid" id="inspMore" hidden>Gallery <span class="arrow">↓</span></button>
+  </div>
+  <section class="inspector__gallery" id="inspGallery" hidden></section>
 </div>
 
 <!-- ░░ LIGHTBOX ░░ -->

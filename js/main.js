@@ -39,8 +39,8 @@ const lbCustom = {};
     s.innerHTML = `<div class="sechead sechead--row"><div><p class="eyebrow">( ${esc(sec.eyebrow || label)} )</p>
       <h2 class="mega">${esc(sec.title || label)}${sec.title2 ? `<br><span class="outline">${esc(sec.title2)}</span>` : ''}</h2></div>
       ${sec.copy ? `<p class="sechead__copy">${esc(sec.copy)}</p>` : ''}</div>
-      <div class="${sec.style === 'scroll' ? 'csec__row' : 'arch__grid csec__grid'}">${items.map((a, i) => `<figure class="shot reveal-img" data-lb="${id}" data-i="${i}"><img src="${img(sid(a.id))}" alt="${esc(a.title || label)}" loading="lazy">${a.title || a.note ? `<div class="cap"><h4>${esc(a.title)}</h4><p>${esc(a.note)}</p></div>` : ''}${a.model && MODELS[a.model] ? `<button class="csec__3d" data-model="${esc(a.model)}" data-cursor="Open" aria-label="Inspect in 3D">3D</button>` : ''}</figure>`).join('')}</div>`;
-    lbCustom[id] = items.map((a) => ({ type: 'img', src: img(sid(a.id)), cap: [a.title, a.note].filter(Boolean).join(' — ') || label }));
+      <div class="${sec.style === 'scroll' ? 'csec__row' : 'arch__grid csec__grid'}">${items.map((a, i) => `<figure class="shot reveal-img" ${a.model && MODELS[a.model] ? `data-model="${esc(a.model)}" data-cursor="3D"` : `data-lb="${id}-${i}" data-i="0"`}><img src="${img(sid(a.id))}" alt="${esc(a.title || label)}" loading="lazy">${a.title || a.note ? `<div class="cap"><h4>${esc(a.title)}</h4><p>${esc(a.note)}</p></div>` : ''}${a.model && MODELS[a.model] ? `<button class="csec__3d" data-model="${esc(a.model)}" data-cursor="Open" aria-label="Inspect in 3D">3D</button>` : ''}</figure>`).join('')}</div>`;
+    items.forEach((a, i) => { lbCustom[`${id}-${i}`] = [a.id, ...(a.gallery || [])].map((g) => ({ type: 'img', src: img(sid(g)), cap: [a.title, a.note].filter(Boolean).join(' — ') || label })); });
     return s;
   };
   SECTIONS.forEach((sec) => {
@@ -431,6 +431,26 @@ function openInspector(key, ev) {
   insp.running = true; insp.renderer.setAnimationLoop(insp._loop); insp.resize();
   loadInspector(key);
 }
+/* the model's gallery under the 3D view: renders from every place on the site that uses this model */
+function modelGallery(key) {
+  const out = [], seen = new Set();
+  const add = (id, cap) => { id = sid(id); if (id && !seen.has(id)) { seen.add(id); out.push({ id, cap }); } };
+  SECTIONS.forEach((s) => (s.custom && !s.hidden ? (s.items || []) : []).forEach((a) => { if (a.model === key && !a.hidden) [a.id, ...(a.gallery || [])].forEach((g) => add(g, a.title || s.label)); }));
+  FEATURED.forEach((p) => { if (p.model === key) (p.images || []).forEach((g) => add(g, p.title)); });
+  FURNITURE.forEach((f) => { if (f.model === key) (f.stages || []).forEach((st) => add(st.image, `${f.title} — ${st.label}`)); });
+  return out;
+}
+function paintGallery(key) {
+  const c = MODELS[key], items = modelGallery(key), box = $('#inspGallery');
+  lbSets['insp'] = items.map((g) => ({ type: 'img', src: img(g.id), cap: g.cap || c.title }));
+  box.hidden = !items.length; $('#inspMore').hidden = !items.length;
+  if (insp) insp.controls.enableZoom = !items.length;          // the wheel scrolls to the gallery instead of zooming
+  $('#inspHint').textContent = items.length ? 'Drag to orbit · Scroll for the gallery · Esc to close' : 'Drag to orbit · Scroll to zoom · Esc to close';
+  box.innerHTML = items.length ? `<h4>${esc(c.title)}</h4><p class="sub">${esc(c.kind || 'Gallery')} · ${items.length} render${items.length > 1 ? 's' : ''}</p>
+    <div class="insp-grid">${items.map((g, i) => `<figure class="shot is-in" data-lb="insp" data-i="${i}"><img src="${img(g.id)}" alt="${esc(g.cap || c.title)}" loading="lazy"></figure>`).join('')}</div>` : '';
+  inspEl.scrollTop = 0;
+}
+$('#inspMore').addEventListener('click', () => inspEl.scrollTo({ top: innerHeight * 0.92, behavior: 'smooth' }));
 function closeInspector() {
   inspEl.classList.remove('is-open'); inspEl.setAttribute('aria-hidden', 'true');
   lenis.start(); heroStage.running = true;
@@ -441,6 +461,7 @@ async function loadInspector(key) {
   const c = MODELS[key];
   inspEl.style.setProperty('--i-bg', c.bg); inspEl.style.setProperty('--i-bg2', c.bg2); inspEl.style.setProperty('--i-ink', c.ink);
   $('#inspTitle').textContent = c.title; $('#inspKind').textContent = c.kind; $('#inspWord').textContent = c.word;
+  paintGallery(key);
   $$('#inspModels button').forEach((b) => b.classList.toggle('is-active', b.dataset.k === key));
   insp.setColors(c); applyLight('match');
   insp.camera.position.set(0, 0.6, (c.clay ? 6.5 : 5.2) * (innerWidth < 760 ? 1.45 : 1)); insp.controls.target.set(0, 0, 0);

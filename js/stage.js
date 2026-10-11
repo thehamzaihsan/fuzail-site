@@ -4,6 +4,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { clone as cloneSkinned } from 'three/addons/utils/SkeletonUtils.js';
 import { MODELS, asset } from './data.js';
 
 const LITE = new URLSearchParams(location.search).has('lite');
@@ -67,7 +68,17 @@ function grayscale(texture) {
 export async function buildModel(key) {
   const cfg = MODELS[key];
   const gltf = await loadGLTF(key);
-  const root = gltf.scene.clone(true);
+  // rigged characters need their skeleton cloned too, otherwise the mesh stays bound to the original bones
+  let skinned = false; gltf.scene.traverse((o) => { if (o.isSkinnedMesh) skinned = true; });
+  const root = skinned ? cloneSkinned(gltf.scene) : gltf.scene.clone(true);
+  if (skinned) root.traverse((o) => { if (o.isSkinnedMesh) o.frustumCulled = false; });
+  // play the model's animation (Idle by default) so characters aren't stuck in a T-pose
+  let mixer = null;
+  const clips = gltf.animations || [];
+  if (clips.length && cfg.anim !== 'none') {
+    const clip = clips.find((c) => c.name === cfg.anim) || clips.find((c) => /idle/i.test(c.name)) || clips[0];
+    mixer = new THREE.AnimationMixer(root); mixer.clipAction(clip).play(); mixer.update(0);
+  }
   const pivot = new THREE.Group();
   const holder = new THREE.Group();
   holder.add(root);
@@ -122,7 +133,7 @@ export async function buildModel(key) {
   holder.scale.setScalar(s);
   holder.position.copy(center).multiplyScalar(-s);
   holder.position.y += (cfg.y || 0);
-  pivot.userData = { key, cfg, height: size.y * s, radius: Math.max(size.x, size.z) * s * 0.5, bottom: -size.y * s / 2 };
+  pivot.userData = { key, cfg, mixer, height: size.y * s, radius: Math.max(size.x, size.z) * s * 0.5, bottom: -size.y * s / 2 };
 
   // stats
   let tris = 0, meshes = 0; const mats = new Set();
@@ -346,6 +357,7 @@ export class Stage {
       this.turntable.rotation.z += (-this.mouse.x * 0.05 - this.turntable.rotation.z) * 0.06;
     }
     const m = this.model;
+    if (m && m.userData.mixer) m.userData.mixer.update(dt);
     if (m) {
       if (m.userData.intro < 1) {
         m.userData.intro = Math.min(1, m.userData.intro + dt * 1.4);
