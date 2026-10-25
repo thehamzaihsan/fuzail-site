@@ -1,15 +1,54 @@
 {
   "functions": {
-    "api/admincontrol.py": { "maxDuration": 30, "includeFiles": "api/_ui/**" }
+    "api/admincontrol.py": {
+      "maxDuration": 30,
+      "includeFiles": "api/_ui/**"
+    }
   },
   "rewrites": [
-    { "source": "/admincontrol", "destination": "/api/admincontrol?r=page" },
-    { "source": "/admincontrol/pair", "destination": "/api/admincontrol?r=pairpage" },
-    { "source": "/admincontrol/ui/:f*", "destination": "/api/admincontrol?r=ui&f=:f*" },
-    { "source": "/admincontrol/api/:p*", "destination": "/api/admincontrol?r=api&p=:p*" }
+    {
+      "source": "/3d",
+      "destination": "/3d.html"
+    },
+    {
+      "source": "/dev",
+      "destination": "/dev.html"
+    },
+    {
+      "source": "/admincontrol",
+      "destination": "/api/admincontrol?r=page"
+    },
+    {
+      "source": "/admincontrol/pair",
+      "destination": "/api/admincontrol?r=pairpage"
+    },
+    {
+      "source": "/admincontrol/ui/:f*",
+      "destination": "/api/admincontrol?r=ui&f=:f*"
+    },
+    {
+      "source": "/admincontrol/api/:p*",
+      "destination": "/api/admincontrol?r=api&p=:p*"
+    }
   ],
   "headers": [
-    { "source": "/admincontrol/:path*", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] },
-    { "source": "/api/:path*", "headers": [{ "key": "X-Robots-Tag", "value": "noindex, nofollow" }] }
+    {
+      "source": "/admincontrol/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/api/:path*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    }
   ]
 }

@@ -145,7 +145,25 @@ SECTION = O({
     "style": RX(re.compile(r"^(grid|scroll)$"), "grid or scroll"),
     "items": L(O({"id": IDV, "title": S(80), "note": S(200), "model": RX(KEY, "model key", empty=True), "gallery": L(IDV, 40), "hidden": BOOL}, ("id",)), 120),
 }, ("id",))
+HREF = RX(re.compile(r"^(https://|mailto:)[^\s<>\"'`]{1,300}$"), "link must start with https://", empty=True)
+TAGS = L(S(40), 20)
+LANDING = O({"enabled": BOOL, "model": RX(KEY, "model key", empty=True), "image": IMG,
+             "leftKicker": S(40), "leftTitle": S(30), "leftSub": S(140), "leftCta": S(30),
+             "rightKicker": S(40), "rightTitle": S(30), "rightSub": S(140), "rightCta": S(30)})
+DEV = O({
+    "role": S(60), "headline": S(120), "intro": S(1500), "location": S(60), "status": S(80),
+    "github": RX(re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$"), "GitHub username (letters, numbers, dashes)", empty=True),
+    "githubRepos": BOOL, "resume": HREF, "terminal": L(S(120), 12),
+    "projects": L(O({"id": IDV, "title": S(80, False), "summary": S(400), "body": S(2000), "stack": TAGS, "repo": HREF, "live": HREF,
+                     "image": IMG, "year": S(12), "featured": BOOL, "hidden": BOOL}, ("id", "title")), 60),
+    "skills": L(O({"title": S(60), "items": TAGS}), 10),
+    "timeline": L(O({"kind": RX(re.compile(r"^(work|edu|award)$"), "work, edu or award"), "when": S(40), "title": S(100, False),
+                     "org": S(100), "note": S(400), "hidden": BOOL}, ("title",)), 40),
+    "stats": L(PAIR, 4),
+})
 SCHEMA = O({
+    "landing": LANDING,
+    "dev": DEV,
     "rev": NUM(0, 1e12),
     "artist": O({"name": S(80), "first": S(30), "role": S(60), "email": RX(re.compile(r"^[^@\s<>\"']{1,64}@[^@\s<>\"']{1,190}$"), "valid email"),
                  "intro": S(1200), "intro2": S(1200), "claim1": S(80), "claim2": S(80), "socials": L(SOCIAL, 12)}),
@@ -200,6 +218,14 @@ def validate(c, index):
     for k in ("before", "after"):
         v = c.get("compare", {}).get(k)
         if v and v not in img: errs.append(f"compare: image '{v}' missing")
+    for pj in c.get("dev", {}).get("projects", []):
+        if pj.get("image") and pj["image"] not in img: errs.append(f"code project '{pj['title']}': image missing")
+    lm = c.get("landing", {}).get("model")
+    if lm and lm not in models: errs.append("start page: unknown model")
+    li = c.get("landing", {}).get("image")
+    if li and li not in img: errs.append("start page: image missing")
+    pids = [p["id"] for p in c.get("dev", {}).get("projects", [])]
+    if len(pids) != len(set(pids)): errs.append("code projects: two projects share the same id")
     seen = set()
     for sec in c.get("sections", []):
         if sec["id"] in seen: errs.append(f"sections: two sections share the id '{sec['id']}'")
@@ -229,6 +255,8 @@ def usage(c):
     for e in c.get("archviz", {}).get("items", []): add("image", e["id"], "ArchViz")
     for e in c.get("more", []): add("image", e["id"], "Archive")
     for e in c.get("reel", []): add("video", e["id"], "Motion reel")
+    for pj in c.get("dev", {}).get("projects", []): add("image", pj.get("image"), "Code project · " + pj["title"])
+    add("image", c.get("landing", {}).get("image"), "Start page")
     for sec in c.get("sections", []):
         for e in sec.get("items", []):
             for g in [e["id"]] + e.get("gallery", []): add("image", g, sec.get("label") or sec["id"])

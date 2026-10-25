@@ -927,5 +927,33 @@
    "nav": true,
    "label": "About"
   }
- ]
+ ],
+ "landing": {
+  "enabled": true,
+  "model": "",
+  "image": "",
+  "leftKicker": "Creative side",
+  "leftTitle": "3D ARTIST",
+  "leftSub": "Product visuals, characters and whole worlds — modelled, lit and rendered in Blender.",
+  "leftCta": "Enter the studio",
+  "rightKicker": "Technical side",
+  "rightTitle": "ENGINEER",
+  "rightSub": "Computer science engineering — software, systems and the code behind the pixels.",
+  "rightCta": "Open the terminal"
+ },
+ "dev": {
+  "role": "Computer Science Engineer",
+  "headline": "I build software with the same precision I bring to 3D.",
+  "intro": "I'm Fuzail Ahmed — a computer science engineer and 3D artist. This side of my portfolio is about code: the projects I've built, the tools I work with and where I've studied and worked.",
+  "location": "",
+  "status": "Open to opportunities",
+  "github": "",
+  "githubRepos": true,
+  "resume": "",
+  "terminal": [],
+  "projects": [],
+  "skills": [],
+  "timeline": [],
+  "stats": []
+ }
 }

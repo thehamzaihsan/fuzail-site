@@ -41,6 +41,8 @@ const ICON = {
   upload: I('<path d="M12 16V4M6 10l6-6 6 6M4 20h16"/>'),
   lock: I('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
   x: I('<path d="M6 6l12 12M18 6L6 18"/>'),
+  code: I('<path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/>'),
+  split: I('<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M14 4L10 20"/>'),
 };
 
 /* ─────────────── API ─────────────── */
@@ -300,6 +302,8 @@ function normalize(c) {
   Object.entries(BUILTIN).forEach(([id, b]) => { if (!have.has(id)) list.push({ id, label: b.site, nav: b.nav !== false }); });
   c.sections = list;
   c.artist.socials = c.artist.socials || [];
+  c.landing = c.landing || {};
+  c.dev = Object.assign({ role: 'Computer Science Engineer', headline: '', intro: '', status: '', github: '', githubRepos: true, resume: '', terminal: [], projects: [], skills: [], timeline: [], stats: [] }, c.dev || {});
 }
 const secName = (s) => (s.custom ? s.label || s.title || 'Untitled section' : BUILTIN[s.id]?.label || s.id);
 
@@ -310,9 +314,11 @@ function pages() {
     if (s.custom) content.push(['sec:' + s.id, secName(s), 'image', s.hidden]);
     else if (BUILTIN[s.id]) content.push([BUILTIN[s.id].page, BUILTIN[s.id].label, BUILTIN[s.id].icon, s.hidden]);
   });
-  return [['grp', 'Content'], ...content, ['grp', 'Library'], ['media', 'Media library', 'image'], ['grp', 'System'], ['history', 'History', 'clock'], ['security', 'Security', 'shield']];
+  return [['grp', 'Content'], ...content,
+    ['grp', 'Start & engineering'], ['landing', 'Start page', 'split'], ['devprofile', 'Engineering profile', 'code'], ['devprojects', 'Code projects', 'code'], ['devskills', 'Skills & journey', 'code'],
+    ['grp', 'Library'], ['media', 'Media library', 'image'], ['grp', 'System'], ['history', 'History', 'clock'], ['security', 'Security', 'shield']];
 }
-const COUNT = { featured: () => C.featured.length, models: () => Object.keys(C.models).length, furniture: () => C.furniture.length, environments: () => C.environments.length, archviz: () => C.archviz.items.length, reel: () => C.reel.length, more: () => C.more.length };
+const COUNT = { devprojects: () => (C.dev.projects || []).length, featured: () => C.featured.length, models: () => Object.keys(C.models).length, furniture: () => C.furniture.length, environments: () => C.environments.length, archviz: () => C.archviz.items.length, reel: () => C.reel.length, more: () => C.more.length };
 const count = (k) => (k.startsWith('sec:') ? (C.sections.find((s) => 'sec:' + s.id === k)?.items || []).length : COUNT[k] ? COUNT[k]() : 0);
 function renderNav() {
   $('#nav').innerHTML = pages().map(([k, l, ic, off]) => k === 'grp' ? `<div class="grp">${l}</div>` :
@@ -841,6 +847,110 @@ function socialsPanel() {
   draw();
   return p;
 }
+
+/* ─────────────── start page & engineering portfolio ─────────────── */
+const SITE_URL = WEB ? '/' : 'http://localhost:8080/';
+const openSite = (path, label) => `<a class="btn sm" href="${SITE_URL}${path}" target="_blank" rel="noopener noreferrer">${esc(label)} ↗</a>`;
+const devSlug = (t) => (t || 'project').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'project';
+
+VIEWS_EXTRA.landing = (v) => {
+  const L = C.landing;
+  v.appendChild(el(`<p class="muted" style="margin:-6px 0 18px;max-width:780px">The first thing visitors see: your two portfolios split by a glowing seam. The left side shows your 3D models (with their colours); the right side is the engineering side with a live terminal.</p>`));
+  const top = el(`<div class="panel" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><b style="flex:1">Preview</b>${openSite('', 'Start page')}${openSite('dev.html', 'Engineering portfolio')}${openSite('3d.html', '3D portfolio')}</div>`);
+  const p1 = el(`<div class="panel"><h3>Left · 3D side</h3><p>Shown over the rotating 3D model.</p></div>`);
+  p1.appendChild(buildForm([
+    { k: 'model', label: '3D model on the start page', t: 'select', opts: () => [['', 'Cycle through the showroom models'], ...Object.entries(C.models).filter(([, m]) => !m.hidden).map(([k, m]) => [k, m.title])] },
+    { t: 'row', fields: [{ k: 'leftKicker', label: 'Small label', t: 'text', max: 40, ph: 'Creative side' }, { k: 'leftTitle', label: 'Big title', t: 'text', max: 30, ph: '3D ARTIST' }] },
+    { k: 'leftSub', label: 'One-line description', t: 'text', max: 140 },
+    { k: 'leftCta', label: 'Button text', t: 'text', max: 30, ph: 'Enter the studio' },
+  ], L, touch));
+  const p2 = el(`<div class="panel"><h3>Right · engineering side</h3><p>The terminal on this side types your name, projects, stack and status automatically.</p></div>`);
+  p2.appendChild(buildForm([
+    { t: 'row', fields: [{ k: 'rightKicker', label: 'Small label', t: 'text', max: 40, ph: 'Technical side' }, { k: 'rightTitle', label: 'Big title', t: 'text', max: 30, ph: 'ENGINEER' }] },
+    { k: 'rightSub', label: 'One-line description', t: 'text', max: 140 },
+    { k: 'rightCta', label: 'Button text', t: 'text', max: 30, ph: 'Open the terminal' },
+  ], L, touch));
+  v.append(top, p1, p2);
+};
+
+VIEWS_EXTRA.devprofile = (v) => {
+  const D = C.dev;
+  v.appendChild(el(`<p class="muted" style="margin:-6px 0 18px;max-width:780px">Your engineering portfolio (fuzailahmed.com/dev.html). Sections without content stay hidden, so the page only shows what you've filled in.</p>`));
+  const p1 = el(`<div class="panel"><h3>Intro</h3></div>`);
+  p1.appendChild(buildForm([
+    { t: 'row', fields: [{ k: 'role', label: 'Role / title', t: 'text', max: 60, ph: 'Computer Science Engineer' }, { k: 'location', label: 'Location', t: 'text', max: 60, ph: 'e.g. Lahore, Pakistan' }] },
+    { k: 'headline', label: 'Headline', t: 'text', max: 120, help: 'Wrap a word in *stars* to set it in italic serif, e.g. I build *fast* software.' },
+    { k: 'intro', label: 'About you', t: 'textarea', max: 1500, rows: 5 },
+    { k: 'status', label: 'Status pill', t: 'text', max: 80, ph: 'Open to opportunities' },
+  ], D, touch));
+  const p2 = el(`<div class="panel"><h3>Links</h3><p>Your email and social links come from About &amp; contact.</p></div>`);
+  p2.appendChild(buildForm([
+    { t: 'row', fields: [{ k: 'github', label: 'GitHub username', t: 'text', max: 39, ph: 'e.g. fuzailahmed' }, { k: 'resume', label: 'CV / résumé link (https://…)', t: 'text', max: 300, ph: 'https://drive.google.com/…' }] },
+    { k: 'githubRepos', label: 'Show my public GitHub repositories automatically', t: 'toggle', help: 'Top 6 by stars, loaded live from GitHub (forks hidden).' },
+  ], D, touch));
+  const p3 = el(`<div class="panel"><h3>Numbers &amp; terminal</h3></div>`);
+  p3.appendChild(buildForm([
+    { k: 'stats', label: 'Big numbers (up to 4)', t: 'pairs', maxItems: 4, ph1: 'Label e.g. projects shipped', ph2: 'Value e.g. 12' },
+    { k: 'terminal', label: 'Extra lines for the start-page terminal', t: 'tags', maxItems: 12, itemMax: 120, ph: 'Start with "$ " for a command, e.g. $ cat goals.txt', help: 'Optional — the terminal already types your name, projects, stack and status.' },
+  ], D, touch));
+  v.append(p1, p2, p3);
+};
+
+VIEWS_EXTRA.devprojects = (v) => {
+  listPage(v, {
+    intro: 'Software projects on your engineering portfolio. Mark one as featured to show it extra large at the top.',
+    get: () => C.dev.projects, newLabel: 'New project',
+    newItem: () => ({ id: '', title: '', year: String(new Date().getFullYear()), summary: '', body: '', stack: [], repo: '', live: '', image: '', featured: false, hidden: false }),
+    check: (d) => (!d.title ? 'Give it a title' : [d.repo, d.live].some((u) => u && !/^https:\/\//.test(u)) ? 'Links must start with https://' : ''),
+    beforeSave: (d, isNew) => {
+      if (isNew || !d.id) { let id = devSlug(d.title), n = 2; while (C.dev.projects.some((x) => x !== d && x.id === id)) id = `${devSlug(d.title)}-${n++}`; d.id = id; }
+      ['repo', 'live', 'image', 'body', 'summary', 'year'].forEach((k) => { if (!d[k]) delete d[k]; });
+    },
+    thumb: (p) => p.image || '', label: (p) => p.title, sub: (p) => [p.year, (p.stack || []).join(', ')].filter(Boolean).join(' · '),
+    badge: (p) => (p.featured ? '<span class="badge">Featured</span>' : ''),
+    fields: [
+      { t: 'row', fields: [{ k: 'title', label: 'Title', t: 'text', max: 80 }, { k: 'year', label: 'Year', t: 'text', max: 12 }] },
+      { k: 'summary', label: 'One-line summary', t: 'text', max: 400 },
+      { k: 'body', label: 'Details (shown when someone opens the project)', t: 'textarea', max: 2000, rows: 5 },
+      { k: 'stack', label: 'Tech used', t: 'tags', maxItems: 20, ph: 'e.g. React — press Enter' },
+      { t: 'row', fields: [{ k: 'repo', label: 'Code link (https://github.com/…)', t: 'text', max: 300 }, { k: 'live', label: 'Live demo link', t: 'text', max: 300 }] },
+      { k: 'image', label: 'Screenshot (optional — a code-style cover is drawn if empty)', t: 'image', optional: true },
+      { k: 'featured', label: 'Featured (shown large)', t: 'toggle' },
+      { k: 'hidden', label: 'Show on the live site', t: 'toggle', invert: true },
+    ],
+  });
+};
+
+VIEWS_EXTRA.devskills = (v) => {
+  const D = C.dev;
+  const p = el(`<div class="panel"><h3>Skills</h3><p>Groups of skills, e.g. Languages · Frameworks · Tools.</p><div id="sk"></div></div>`);
+  const draw = () => {
+    const box = $('#sk', p); box.innerHTML = '';
+    D.skills.forEach((g, i) => {
+      const r = el(`<div style="display:grid;grid-template-columns:200px 1fr 34px;gap:10px;align-items:start;margin-bottom:10px"></div>`);
+      const f = buildForm([{ k: 'title', t: 'text', max: 60 }, { k: 'items', t: 'tags', maxItems: 20 }], g, touch);
+      [...f.children].forEach((c) => { c.style.marginBottom = '0'; $('label', c)?.remove(); r.appendChild(c); });
+      const x = el(`<button class="icon-btn" title="Remove group">${ICON.trash}</button>`); x.onclick = () => { D.skills.splice(i, 1); touch(); draw(); }; r.appendChild(x);
+      box.appendChild(r);
+    });
+    if (D.skills.length < 10) { const a = el(`<button class="btn xs ghost">${ICON.plus} Add group</button>`); a.onclick = () => { D.skills.push({ title: D.skills.length ? 'New group' : 'Languages', items: [] }); touch(); draw(); }; box.appendChild(a); }
+  };
+  v.appendChild(p); draw();
+  v.appendChild(el(`<h3 style="margin:28px 0 12px">Journey — education &amp; experience</h3>`));
+  const KIND = { work: 'Work', edu: 'Education', award: 'Award' };
+  listPage(v, {
+    get: () => D.timeline, newLabel: 'New entry',
+    newItem: () => ({ kind: 'edu', when: '', title: '', org: '', note: '', hidden: false }),
+    check: (d) => (!d.title ? 'Give it a title' : ''),
+    thumb: () => '', label: (t) => t.title, sub: (t) => [KIND[t.kind], t.when, t.org].filter(Boolean).join(' · '),
+    fields: [
+      { t: 'row', fields: [{ k: 'kind', label: 'Type', t: 'select', opts: () => Object.entries(KIND) }, { k: 'when', label: 'When', t: 'text', max: 40, ph: '2021 — 2025' }] },
+      { t: 'row', fields: [{ k: 'title', label: 'Title', t: 'text', max: 100, ph: 'BS Computer Science / Software Intern' }, { k: 'org', label: 'University / company', t: 'text', max: 100 }] },
+      { k: 'note', label: 'Note', t: 'textarea', max: 400, rows: 3 },
+      { k: 'hidden', label: 'Show on the live site', t: 'toggle', invert: true },
+    ],
+  });
+};
 
 const VIEWS = {
   ...VIEWS_EXTRA,
