@@ -1,5 +1,5 @@
 {
- "rev": 14,
+ "rev": 15,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -955,9 +955,6 @@
    {
     "id": "axis",
     "title": "AXIS",
-    "year": "2026",
-    "featured": true,
-    "hidden": false,
     "summary": "Anatomy Exploration and Interactive System — a physics-based surgical simulation that responds in real time to every operational action.",
     "body": "Final-year project · Lead Developer and Programmer.\n\nEngineered a high-fidelity, physics-based medical simulation application designed for immersive surgical procedure practice. Developed the core simulation mechanics and interactive 3D environments in C++ and Unreal Engine 5, and programmed real-time feedback loops that analyse and respond to precise operational actions during simulated procedures — delivering realistic physical feedback rather than static asset rotation.",
     "stack": [
@@ -965,14 +962,15 @@
      "Unreal Engine 5",
      "Physics simulation",
      "Real-time feedback"
-    ]
+    ],
+    "image": "screenshot-2026-10-05-213649-0f1104",
+    "year": "2026",
+    "featured": true,
+    "hidden": false
    },
    {
     "id": "gen-z-slang-translator",
     "title": "Gen-Z Slang Translator",
-    "year": "2026",
-    "featured": false,
-    "hidden": false,
     "summary": "A production-grade RAG system that translates Gen-Z slang into standard English.",
     "body": "AI Pipeline & Backend Developer.\n\nBuilt and deployed a Retrieval-Augmented Generation translation system with a high-performance Python + FastAPI backend to handle translation queries. Structured, curated and processed a custom NLP dataset of 1,000+ entries for targeted model training.",
     "stack": [
@@ -980,28 +978,28 @@
      "FastAPI",
      "RAG",
      "NLP"
-    ]
+    ],
+    "year": "2026",
+    "featured": false,
+    "hidden": false
    },
    {
     "id": "pneumonia-detection",
     "title": "Pneumonia Detection AI",
-    "year": "2025",
-    "featured": false,
-    "hidden": false,
     "summary": "Deep learning computer-vision pipeline that detects pneumonia in chest radiographs with 90–95% accuracy.",
     "body": "AI Engineer & Developer.\n\nDesigned and trained a robust computer vision pipeline optimised for medical imaging analysis, implementing deep learning classification models to identify anomalies in radiographic data. Achieved and verified a 90–95% diagnostic accuracy rate during testing.",
     "stack": [
      "Deep Learning",
      "Computer Vision",
      "Python"
-    ]
+    ],
+    "year": "2025",
+    "featured": false,
+    "hidden": false
    },
    {
     "id": "ambient-lighting-kit",
     "title": "Ambient Lighting Kit",
-    "year": "2025 – now",
-    "featured": false,
-    "hidden": false,
     "summary": "A commercial-grade ambient lighting kit for PC monitors, screen-synced in real time through SignalRGB (in development).",
     "body": "Founder · Hardware & Firmware Developer.\n\nEngineered the kit from the ground up, bridging physical electronics with desktop software. Programmed custom firmware and device configuration for ESP32-S3 microcontrollers, designed custom PCB layouts under strict power constraints, and integrated the hardware with SignalRGB for real-time screen syncing.",
     "stack": [
@@ -1009,14 +1007,14 @@
      "Firmware",
      "PCB Design",
      "SignalRGB"
-    ]
+    ],
+    "year": "2025 – now",
+    "featured": false,
+    "hidden": false
    },
    {
     "id": "smart-traffic-lights",
     "title": "Smart Traffic Light System",
-    "year": "2024",
-    "featured": false,
-    "hidden": false,
     "summary": "Wireless, motion-aware traffic management that adapts signal timings to real-time vehicle and pedestrian presence.",
     "body": "Hardware & Embedded Systems Developer.\n\nProgrammed low-latency embedded firmware that processes motion-sensor input and coordinates wireless communication between intersection nodes. Developed adaptive scheduling algorithms to cut congestion and clear gridlocks, and designed the hardware: power distribution, sensor calibration and durable prototype enclosures.",
     "stack": [
@@ -1024,7 +1022,10 @@
      "Sensors",
      "Wireless",
      "Algorithms"
-    ]
+    ],
+    "year": "2024",
+    "featured": false,
+    "hidden": false
    }
   ],
   "skills": [
