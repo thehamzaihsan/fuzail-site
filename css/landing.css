@@ -22,6 +22,7 @@
 html, body { margin: 0; height: 100%; background: #07090c; overflow: hidden; }
 body { font-family: var(--sans); color: #fff; -webkit-font-smoothing: antialiased; }
 a { color: inherit; text-decoration: none; }
+[hidden] { display: none !important; }
 
 .split { position: fixed; inset: 0; }
 .side { position: absolute; inset: 0; display: block; cursor: pointer; outline: none; transition: opacity .8s var(--ease); }
@@ -86,6 +87,25 @@ a { color: inherit; text-decoration: none; }
 .hint { margin: 6px 0 0; font-family: var(--mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: .12em; color: rgba(255,255,255,.62); }
 .hint .k { display: inline-grid; place-items: center; width: 22px; height: 22px; margin: 0 6px; border: 1px solid rgba(255,255,255,.35); border-radius: 6px; }
 
+/* the profile photo on the seam */
+.me { position: absolute; left: 0; top: 0; z-index: 5; width: clamp(118px, 10.5vw, 168px); aspect-ratio: 1; display: block; border-radius: 50%; will-change: transform; cursor: pointer; }
+.me__ring { position: absolute; inset: -14%; width: 128%; height: 128%; animation: spin 18s linear infinite; pointer-events: none; overflow: visible; }
+.me__ring text { font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: .1em; fill: #fff; opacity: .78; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.me__pic { position: absolute; inset: 0; border-radius: 50%; padding: 4px; overflow: hidden;
+  background: conic-gradient(from 200deg, var(--a-glow), #fff 25%, var(--b-glow) 50%, #fff 75%, var(--a-glow));
+  box-shadow: 0 0 0 6px rgba(7, 9, 12, .55), 0 0 50px color-mix(in srgb, var(--a-glow) 45%, transparent), 0 0 70px rgba(60, 242, 193, .3); transition: transform .6s var(--ease), box-shadow .6s; }
+.me__pic img, .me__pic b { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.me__pic b { background: radial-gradient(circle at 30% 25%, #2a2622, #0b0b0d 70%); font-family: var(--display); font-weight: 400; font-size: clamp(36px, 3.4vw, 54px); letter-spacing: .02em; color: #fff; }
+.me__tip { position: absolute; left: 50%; top: calc(100% + 26px); transform: translate(-50%, 6px); white-space: nowrap; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: #fff; opacity: 0; transition: .4s var(--ease); pointer-events: none; padding: 5px 10px; border-radius: 99px; background: rgba(7,9,12,.7); }
+.me:hover .me__pic, .me:focus-visible .me__pic { transform: scale(1.07); }
+.me:hover .me__tip, .me:focus-visible .me__tip { opacity: 1; transform: translate(-50%, 0); }
+.me:hover .me__ring { animation-duration: 6s; }
+.me:focus-visible { outline: none; } .me:focus-visible .me__pic { box-shadow: 0 0 0 3px #fff, 0 0 60px var(--b-glow); }
+body.is-going .me__pic { transform: scale(18); transition: transform .9s cubic-bezier(.7, 0, .2, 1); }
+body.is-going .me__ring, body.is-going .me__tip { opacity: 0; transition: opacity .2s; }
+body.is-intro .me { opacity: 0; } .me { transition: opacity .8s .3s; }
+
 /* intro + exit */
 body.is-intro .side__copy { opacity: 0; transform: translateY(30px); }
 body.is-intro .term { opacity: 0; }
@@ -108,5 +128,7 @@ body.is-leaving .side__copy, body.is-leaving .term, body.is-leaving .top { opaci
   .side--art .side__word { top: 26%; font-size: 58vw; }
   .side--code .side__word { top: 76%; font-size: 40vw; }
   .hint { display: none; }
+  .me { width: 96px; }
+  .me__ring text { font-size: 13px; }
 }
 @media (prefers-reduced-motion: reduce) { .term__body .cur { animation: none; } }

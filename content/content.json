@@ -1,5 +1,5 @@
 {
- "rev": 15,
+ "rev": 16,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -1137,6 +1137,110 @@
    {
     "label": "BSCS · Bahria University",
     "value": "2026"
+   }
+  ]
+ },
+ "about": {
+  "photo": "",
+  "title": "3D Artist, AI Engineer & Software / Game Developer",
+  "summary": "I'm a 3D modeler, environment designer and CGI specialist with a strong computer science foundation. I build high-fidelity visual assets, interactive simulations and intelligent software pipelines — from commercial-grade 3D product designs, precise texturing and cinematic lighting for freelance clients and PEAK Company, to end-to-end CGI productions where I design and animate 3D garments in Clo3D and Blender, composite them into live footage, and finish them with motion graphics in After Effects and sound design in Premiere Pro.\n\nOn the technical side I work in applied AI and software engineering: I lead development of AXIS, a physics-based surgical simulation with real-time feedback; built a production-ready RAG pipeline that translates Gen-Z slang into standard English; and trained a deep learning pneumonia detection system that reaches 90–95% accuracy. I'm completing my Bachelor's in Computer Science, bridging cutting-edge 3D graphics pipelines and cloud-native AI.",
+  "cv": "",
+  "facts": [
+   {
+    "label": "Based in",
+    "value": "Islamabad, Pakistan"
+   },
+   {
+    "label": "Studying",
+    "value": "BSCS · Bahria University"
+   },
+   {
+    "label": "Currently",
+    "value": "Lead Simulation Developer, AXIS"
+   },
+   {
+    "label": "Contract",
+    "value": "3D Product Modeler, PEAK"
+   }
+  ],
+  "creative": [
+   {
+    "when": "Jan 2024 — Present",
+    "title": "3D Product Modeler (contract)",
+    "org": "PEAK Company",
+    "note": "High-fidelity 3D product models for commercial asset lines — advanced texturing and look development in Substance Painter and Marmoset Toolbag, with precise studio lighting and rendering pipelines."
+   },
+   {
+    "when": "Jan 2024 — Present",
+    "title": "Freelance 3D Modeler & Environment Designer",
+    "org": "Self-employed",
+    "note": "Immersive environments and high-fidelity assets in Blender and Unreal Engine, from creative brief to production-ready models: optimisation, UV unwrapping, map baking and engine integration."
+   },
+   {
+    "when": "Jan 2024 — Present",
+    "title": "CGI & VFX Pipeline Specialist",
+    "org": "Project-based / freelance",
+    "note": "End-to-end CGI pipeline compositing a dynamic clothing lineup into live-action footage — garments modelled, simulated and animated in Clo3D and Blender, with motion graphics in After Effects and sound design in Premiere Pro."
+   }
+  ],
+  "projects3d": [
+   {
+    "title": "Motifz — CGI Advertisement",
+    "when": "July 2025",
+    "role": "CGI & VFX Pipeline Specialist",
+    "note": "Complete CGI production integrating a commercial clothing lineup into live-action footage, with simulated garments, compositing, motion graphics and SFX.",
+    "image": ""
+   },
+   {
+    "title": "Heydar Aliyev Center",
+    "when": "2026 · 24 hrs",
+    "role": "3D & Environment Designer",
+    "note": "The iconic landmark rebuilt as a high-fidelity environment — fluid organic surfaces, clean topology, realistic materials and atmospheric lighting.",
+    "image": ""
+   },
+   {
+    "title": "Topographic Route Visualizations",
+    "when": "2026 — Present",
+    "role": "PEAK Company · 3D Modeling & Digital Fabrication",
+    "note": "GPS and Strava routes turned into accurate 3D terrain models, engineered as watertight, print-ready meshes for additive manufacturing.",
+    "image": ""
+   },
+   {
+    "title": "J. Oud — Luxury Product Visualization",
+    "when": "Portfolio",
+    "role": "3D Artist & Material Specialist",
+    "note": "Premium perfume bottle with thick-walled glass refraction, internal fluid volume and gold accents under a dedicated studio light rig.",
+    "image": "oud_front"
+   },
+   {
+    "title": "HP Omen Encoder — Hard-Surface Design",
+    "when": "Portfolio",
+    "role": "3D Product Modeler",
+    "note": "Millimetre-precise hard-surface keyboard with PBR anodised aluminium, matte keycaps and braided cable, high-to-low poly bakes and a commercial studio setup.",
+    "image": "omen_1"
+   }
+  ],
+  "skills3d": [
+   {
+    "title": "Modeling & Look Dev",
+    "items": [
+     "3D Product Modeling",
+     "Environment Design",
+     "Texturing & Look Development",
+     "Map Baking & UV Unwrapping",
+     "Geometry Optimization",
+     "Studio & Cinematic Lighting"
+    ]
+   },
+   {
+    "title": "CGI & Motion",
+    "items": [
+     "Digital Fashion & Cloth Simulation",
+     "CGI Footage Integration",
+     "Compositing",
+     "Motion Graphics Design",
+     "Video Editing & Sound Design"
+    ]
    }
   ]
  }

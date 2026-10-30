@@ -161,7 +161,14 @@ DEV = O({
                      "org": S(100), "note": S(400), "hidden": BOOL}, ("title",)), 40),
     "stats": L(PAIR, 4),
 })
+ABOUT = O({
+    "photo": IMG, "title": S(120), "summary": S(3000), "cv": HREF, "facts": L(PAIR, 8),
+    "creative": L(O({"when": S(40), "title": S(100, False), "org": S(100), "note": S(400), "hidden": BOOL}, ("title",)), 20),
+    "projects3d": L(O({"title": S(100, False), "when": S(40), "role": S(100), "note": S(400), "image": IMG, "hidden": BOOL}, ("title",)), 20),
+    "skills3d": L(O({"title": S(60), "items": TAGS}), 8),
+})
 SCHEMA = O({
+    "about": ABOUT,
     "landing": LANDING,
     "dev": DEV,
     "rev": NUM(0, 1e12),
@@ -220,6 +227,9 @@ def validate(c, index):
         if v and v not in img: errs.append(f"compare: image '{v}' missing")
     for pj in c.get("dev", {}).get("projects", []):
         if pj.get("image") and pj["image"] not in img: errs.append(f"code project '{pj['title']}': image missing")
+    ab = c.get("about", {})
+    for im in [ab.get("photo")] + [p.get("image") for p in ab.get("projects3d", [])]:
+        if im and im not in img: errs.append(f"about me: image '{im}' missing")
     lm = c.get("landing", {}).get("model")
     if lm and lm not in models: errs.append("start page: unknown model")
     li = c.get("landing", {}).get("image")
@@ -257,6 +267,8 @@ def usage(c):
     for e in c.get("reel", []): add("video", e["id"], "Motion reel")
     for pj in c.get("dev", {}).get("projects", []): add("image", pj.get("image"), "Code project · " + pj["title"])
     add("image", c.get("landing", {}).get("image"), "Start page")
+    add("image", c.get("about", {}).get("photo"), "About me · photo")
+    for p in c.get("about", {}).get("projects3d", []): add("image", p.get("image"), "About me · " + p["title"])
     for sec in c.get("sections", []):
         for e in sec.get("items", []):
             for g in [e["id"]] + e.get("gallery", []): add("image", g, sec.get("label") or sec["id"])

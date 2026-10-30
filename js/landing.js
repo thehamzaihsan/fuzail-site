@@ -8,7 +8,8 @@ const D = CONTENT.dev || {};
 const A = CONTENT.artist || {};
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const root = document.documentElement;
-const art = $('#sideArt'), code = $('#sideCode');
+const art = $('#sideArt'), code = $('#sideCode'), me = $('#me');
+const AB = CONTENT.about || {};
 
 // ───────── text from the dashboard ─────────
 const txt = (id, v) => { if (v) $(id).textContent = v; };
@@ -34,6 +35,8 @@ function applyClip() {
     art.style.clipPath = `polygon(0 0, ${x1}px 0, ${x2}px ${H}px, 0 ${H}px)`;
     code.style.clipPath = `polygon(${x1}px 0, ${W}px 0, ${W}px ${H}px, ${x2}px ${H}px)`;
   }
+  // the profile photo sits on the middle of the seam
+  if (me) { const cxp = (seamPts()[0][0] + seamPts()[1][0]) / 2, cyp = (seamPts()[0][1] + seamPts()[1][1]) / 2; me.style.transform = `translate3d(${cxp}px, ${cyp}px, 0) translate(-50%, -50%)`; }
   // keep each side's content centred in the part of the screen it owns, and fade it as it gets squeezed
   const a = S.s, b = 1 - S.s;
   const stage = $('#artStage');
@@ -247,8 +250,22 @@ function choose(side) {
 addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === '1') choose('art');
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === '2') choose('code');
+  if (e.key === 'a' || e.key === 'A') me.click();
 });
-addEventListener('pageshow', (e) => { if (e.persisted) { S.leaving = false; S.target = 0.5; S.s = 0.5; document.body.classList.remove('is-leaving'); } });
+addEventListener('pageshow', (e) => { if (e.persisted) { S.leaving = false; S.target = 0.5; S.s = 0.5; document.body.classList.remove('is-leaving', 'is-going'); } });
+
+// ───────── the profile photo → About page ─────────
+let meHover = false;
+if (AB.photo) { const im = $('#mePhoto'); im.src = asset(`assets/thumb/${AB.photo}.webp`); im.onload = () => { im.hidden = false; $('#meMono').hidden = true; }; }
+const initials = (A.name || 'Fuzail Ahmed').split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
+$('#meMono').textContent = initials;
+me.addEventListener('pointerenter', () => { meHover = true; S.flash = Math.max(S.flash, 0.35); prefetch('about.html'); });
+me.addEventListener('pointerleave', () => { meHover = false; });
+me.addEventListener('click', (e) => {
+  e.preventDefault(); if (S.leaving) return;
+  S.leaving = true; document.body.classList.add('is-leaving', 'is-going'); S.flash = 1; spawn(120, 2.6);
+  setTimeout(() => { location.href = 'about.html'; }, reduce ? 50 : 760);
+});
 
 // ───────── main loop ─────────
 let last = performance.now();
@@ -256,7 +273,7 @@ function frame(now) {
   const dt = Math.min(50, now - last); last = now;
   if (!S.leaving) {
     // lean toward the side under the cursor
-    const hov = pointerIn ? sideAt(mx, my) : null;
+    const hov = pointerIn && !meHover ? sideAt(mx, my) : null;
     S.target = hov === 'art' ? 0.6 : hov === 'code' ? 0.4 : 0.5;
     art.classList.toggle('is-hot', hov === 'art'); code.classList.toggle('is-hot', hov === 'code');
   }

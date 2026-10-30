@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>About Fuzail Ahmed — 3D Artist, AI Engineer &amp; Developer</title>
+<meta name="description" content="About Fuzail Ahmed — 3D artist, AI engineer and software / game developer from Islamabad. Experience, education, skills and projects.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://fuzailahmed.com/about">
+<meta name="theme-color" content="#0b0a0a">
+<meta property="og:type" content="profile">
+<meta property="og:url" content="https://fuzailahmed.com/about">
+<meta property="og:site_name" content="Fuzail Ahmed">
+<meta property="og:title" content="About Fuzail Ahmed">
+<meta property="og:description" content="3D artist, AI engineer and software / game developer — experience, education, skills and projects.">
+<meta property="og:image" content="https://fuzailahmed.com/assets/img/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="About Fuzail Ahmed">
+<meta name="twitter:image" content="https://fuzailahmed.com/assets/img/og-image.jpg">
+<link rel="stylesheet" href="css/about.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23ff5a1f'/%3E%3Ctext x='50%25' y='58%25' text-anchor='middle' dominant-baseline='middle' font-family='Impact,Arial Black,sans-serif' font-size='40' fill='%23111'%3EF%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="nav__home" href="./" aria-label="Start page"><span class="a">FUZAIL</span><span class="b">ahmed</span></a>
+  <nav class="nav__links">
+    <a class="to-art" href="3d.html"><i>3D</i>Art portfolio</a>
+    <a class="to-code" href="dev.html"><i>&gt;_</i>Engineering</a>
+  </nav>
+</header>
+
+<main>
+  <!-- ░░ HERO ░░ -->
+  <section class="hero">
+    <div class="hero__split" aria-hidden="true"><div class="hs-a"></div><div class="hs-b"></div><canvas id="heroSparks"></canvas></div>
+    <div class="hero__inner">
+      <div class="photo reveal" id="photo">
+        <svg class="photo__ring" viewBox="0 0 200 200" aria-hidden="true"><defs><path id="pc" d="M100,100 m-90,0 a90,90 0 1,1 180,0 a90,90 0 1,1 -180,0"/></defs>
+          <text><textPath href="#pc" textLength="560" lengthAdjust="spacing" id="ringText">3D ARTIST • AI ENGINEER • DEVELOPER •</textPath></text></svg>
+        <div class="photo__pic"><img id="photoImg" alt="Fuzail Ahmed" hidden><b id="photoMono">FA</b></div>
+      </div>
+      <div class="hero__copy">
+        <p class="eyebrow reveal">( about me )</p>
+        <h1 class="hero__name" id="name"><span class="a">FUZAIL</span><span class="b">AHMED</span></h1>
+        <p class="hero__title reveal" id="title"></p>
+        <div class="hero__btns reveal" id="heroBtns"></div>
+      </div>
+    </div>
+    <dl class="facts" id="facts"></dl>
+  </section>
+
+  <!-- ░░ SUMMARY ░░ -->
+  <section class="summary" id="summary">
+    <p class="eyebrow">( 01 — in short )</p>
+    <div class="summary__text" id="summaryText"></div>
+  </section>
+
+  <!-- ░░ TWO SIDES ░░ -->
+  <section class="sides" id="sides">
+    <a class="side side--art reveal" href="3d.html">
+      <span class="side__k">( creative side )</span>
+      <span class="side__t">3D ARTIST</span>
+      <span class="side__n" id="artCount"></span>
+      <span class="side__go">Enter the studio <i>→</i></span>
+    </a>
+    <a class="side side--code reveal" href="dev.html">
+      <span class="side__k">// technical side</span>
+      <span class="side__t">&gt; ENGINEER</span>
+      <span class="side__n" id="codeCount"></span>
+      <span class="side__go">Open the terminal <i>→</i></span>
+    </a>
+  </section>
+
+  <!-- ░░ EXPERIENCE ░░ -->
+  <section class="block" id="experience">
+    <div class="head"><p class="eyebrow">( 02 )</p><h2>Experience</h2></div>
+    <div class="cols">
+      <div class="col col--code"><h3><span>&gt;_</span> Engineering</h3><ol class="tl" id="expCode"></ol></div>
+      <div class="col col--art"><h3><span>3D</span> 3D &amp; CGI</h3><ol class="tl" id="expArt"></ol></div>
+    </div>
+  </section>
+
+  <!-- ░░ PROJECTS ░░ -->
+  <section class="block" id="projects">
+    <div class="head"><p class="eyebrow">( 03 )</p><h2>Selected projects</h2></div>
+    <div class="cols">
+      <div class="col col--code"><h3><span>&gt;_</span> AI, software &amp; hardware</h3><div class="plist" id="projCode"></div><a class="more" href="dev.html#projects">All engineering projects →</a></div>
+      <div class="col col--art"><h3><span>3D</span> 3D &amp; CGI</h3><div class="plist" id="projArt"></div><a class="more" href="3d.html">The full 3D portfolio →</a></div>
+    </div>
+  </section>
+
+  <!-- ░░ SKILLS ░░ -->
+  <section class="block" id="skills">
+    <div class="head"><p class="eyebrow">( 04 )</p><h2>Skills</h2></div>
+    <div class="cols">
+      <div class="col col--code" id="skillCode"></div>
+      <div class="col col--art" id="skillArt"></div>
+    </div>
+  </section>
+
+  <!-- ░░ EDUCATION ░░ -->
+  <section class="block" id="education">
+    <div class="head"><p class="eyebrow">( 05 )</p><h2>Education</h2></div>
+    <div class="edu" id="edu"></div>
+  </section>
+
+  <!-- ░░ CONTACT ░░ -->
+  <section class="contact" id="contact">
+    <p class="eyebrow">( say hello )</p>
+    <a class="contact__big" id="mailBig" href="#"><span>LET'S MAKE</span><span class="o">SOMETHING.</span></a>
+    <div class="contact__row" id="contactRow"></div>
+    <footer class="foot"><span>© <span id="year"></span> Fuzail Ahmed</span><span class="foot__links"><a href="./">Start page</a><a href="3d.html">3D portfolio</a><a href="dev.html">Engineering</a></span></footer>
+  </section>
+</main>
+<div class="toast" id="toast" role="status"></div>
+<script type="module" src="js/about.js"></script>
+</body>
+</html>

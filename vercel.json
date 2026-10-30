@@ -15,6 +15,10 @@
       "destination": "/dev.html"
     },
     {
+      "source": "/about",
+      "destination": "/about.html"
+    },
+    {
       "source": "/admincontrol",
       "destination": "/api/admincontrol?r=page"
     },

@@ -65,7 +65,7 @@ a { color: inherit; }
 .brand { display: flex; align-items: baseline; gap: 8px; padding: 2px 10px 22px; }
 .brand b { font-family: var(--display); font-weight: 400; font-size: 28px; letter-spacing: .01em; }
 .brand span { font-family: var(--mono); font-size: 11px; color: var(--brand); text-transform: uppercase; letter-spacing: .1em; }
-#nav { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; }
+#nav { display: flex; flex-direction: column; gap: 2px; overflow-y: auto; min-height: 0; flex: 0 1 auto; scrollbar-width: thin; }
 #nav .grp { font-family: var(--mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .1em; color: var(--dim); padding: 16px 10px 6px; }
 #nav button { display: flex; align-items: center; gap: 10px; text-align: left; padding: 9px 10px; border-radius: 9px; color: var(--mut); font-weight: 500; transition: .15s; }
 #nav button svg { width: 17px; height: 17px; flex: none; }

@@ -303,6 +303,7 @@ function normalize(c) {
   c.sections = list;
   c.artist.socials = c.artist.socials || [];
   c.landing = c.landing || {};
+  c.about = Object.assign({ photo: '', title: '', summary: '', cv: '', facts: [], creative: [], projects3d: [], skills3d: [] }, c.about || {});
   c.dev = Object.assign({ role: 'Computer Science Engineer', headline: '', intro: '', status: '', github: '', githubRepos: true, resume: '', terminal: [], projects: [], skills: [], timeline: [], stats: [] }, c.dev || {});
 }
 const secName = (s) => (s.custom ? s.label || s.title || 'Untitled section' : BUILTIN[s.id]?.label || s.id);
@@ -315,7 +316,7 @@ function pages() {
     else if (BUILTIN[s.id]) content.push([BUILTIN[s.id].page, BUILTIN[s.id].label, BUILTIN[s.id].icon, s.hidden]);
   });
   return [['grp', 'Content'], ...content,
-    ['grp', 'Start & engineering'], ['landing', 'Start page', 'split'], ['devprofile', 'Engineering profile', 'code'], ['devprojects', 'Code projects', 'code'], ['devskills', 'Skills & journey', 'code'],
+    ['grp', 'Start & engineering'], ['landing', 'Start page', 'split'], ['aboutme', 'About me', 'user'], ['devprofile', 'Engineering profile', 'code'], ['devprojects', 'Code projects', 'code'], ['devskills', 'Skills & journey', 'code'],
     ['grp', 'Library'], ['media', 'Media library', 'image'], ['grp', 'System'], ['history', 'History', 'clock'], ['security', 'Security', 'shield']];
 }
 const COUNT = { devprojects: () => (C.dev.projects || []).length, featured: () => C.featured.length, models: () => Object.keys(C.models).length, furniture: () => C.furniture.length, environments: () => C.environments.length, archviz: () => C.archviz.items.length, reel: () => C.reel.length, more: () => C.more.length };
@@ -950,6 +951,50 @@ VIEWS_EXTRA.devskills = (v) => {
       { k: 'hidden', label: 'Show on the live site', t: 'toggle', invert: true },
     ],
   });
+};
+
+VIEWS_EXTRA.aboutme = (v) => {
+  const AB = C.about;
+  v.appendChild(el(`<p class="muted" style="margin:-6px 0 18px;max-width:780px">Your About page (opens when visitors click your photo in the middle of the start page). Engineering experience, education and skills come from <b>Skills &amp; journey</b>; engineering projects from <b>Code projects</b>.</p>`));
+  v.appendChild(el(`<div class="panel" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><b style="flex:1">Preview</b>${openSite('about.html', 'About page')}${openSite('', 'Start page')}</div>`));
+  const p1 = el(`<div class="panel"><h3>Photo &amp; intro</h3><p>Use a clear, roughly square headshot — it's shown in a circle.</p></div>`);
+  p1.appendChild(buildForm([
+    { k: 'photo', label: 'Profile photo', t: 'image', optional: true },
+    { k: 'title', label: 'Title under your name', t: 'text', max: 120 },
+    { k: 'summary', label: 'Summary (leave an empty line between paragraphs)', t: 'textarea', max: 3000, rows: 9 },
+    { k: 'cv', label: 'CV download link (https://…) — adds a “Download CV” button', t: 'text', max: 300, ph: 'https://drive.google.com/…' },
+    { k: 'facts', label: 'Quick facts under the photo', t: 'pairs', maxItems: 8, ph1: 'Label e.g. Based in', ph2: 'Value e.g. Islamabad' },
+  ], AB, touch));
+  v.appendChild(p1);
+  v.appendChild(el(`<h3 style="margin:28px 0 12px">3D &amp; CGI experience</h3>`));
+  listPage(v, {
+    get: () => AB.creative, newLabel: 'New role', newItem: () => ({ when: '', title: '', org: '', note: '', hidden: false }),
+    check: (d) => (!d.title ? 'Give it a title' : ''), thumb: () => '', label: (t) => t.title, sub: (t) => [t.when, t.org].filter(Boolean).join(' · '),
+    fields: [{ t: 'row', fields: [{ k: 'title', label: 'Role', t: 'text', max: 100 }, { k: 'when', label: 'When', t: 'text', max: 40, ph: 'Jan 2024 — Present' }] },
+      { k: 'org', label: 'Company / client', t: 'text', max: 100 }, { k: 'note', label: 'What you did', t: 'textarea', max: 400, rows: 3 }, { k: 'hidden', label: 'Show on the About page', t: 'toggle', invert: true }],
+  });
+  v.appendChild(el(`<h3 style="margin:28px 0 12px">3D &amp; CGI projects</h3>`));
+  listPage(v, {
+    get: () => AB.projects3d, newLabel: 'New 3D project', newItem: () => ({ title: '', when: '', role: '', note: '', image: '', hidden: false }),
+    check: (d) => (!d.title ? 'Give it a title' : ''), beforeSave: (d) => { if (!d.image) delete d.image; },
+    thumb: (p) => p.image || '', label: (p) => p.title, sub: (p) => [p.when, p.role].filter(Boolean).join(' · '),
+    fields: [{ t: 'row', fields: [{ k: 'title', label: 'Title', t: 'text', max: 100 }, { k: 'when', label: 'When', t: 'text', max: 40 }] },
+      { k: 'role', label: 'Your role', t: 'text', max: 100 }, { k: 'note', label: 'Description', t: 'textarea', max: 400, rows: 3 },
+      { k: 'image', label: 'Thumbnail (optional)', t: 'image', optional: true }, { k: 'hidden', label: 'Show on the About page', t: 'toggle', invert: true }],
+  });
+  const p3 = el(`<div class="panel" style="margin-top:28px"><h3>3D &amp; CGI skills</h3><div id="sk3"></div></div>`);
+  const draw = () => {
+    const box = $('#sk3', p3); box.innerHTML = '';
+    AB.skills3d.forEach((g, i) => {
+      const r = el(`<div style="display:grid;grid-template-columns:200px 1fr 34px;gap:10px;align-items:start;margin-bottom:10px"></div>`);
+      const f = buildForm([{ k: 'title', t: 'text', max: 60 }, { k: 'items', t: 'tags', maxItems: 20 }], g, touch);
+      [...f.children].forEach((c) => { c.style.marginBottom = '0'; $('label', c)?.remove(); r.appendChild(c); });
+      const x = el(`<button class="icon-btn" title="Remove group">${ICON.trash}</button>`); x.onclick = () => { AB.skills3d.splice(i, 1); touch(); draw(); }; r.appendChild(x);
+      box.appendChild(r);
+    });
+    if (AB.skills3d.length < 8) { const a = el(`<button class="btn xs ghost">${ICON.plus} Add group</button>`); a.onclick = () => { AB.skills3d.push({ title: 'New group', items: [] }); touch(); draw(); }; box.appendChild(a); }
+  };
+  v.appendChild(p3); draw();
 };
 
 const VIEWS = {
