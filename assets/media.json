@@ -481,5 +481,12 @@
   "avg": "#6c4240",
   "dom": "#10151c",
   "accent": "#ed6255"
+ },
+ "fuzail-ahmed-photo": {
+  "w": 1161,
+  "h": 1161,
+  "avg": "#777777",
+  "dom": "#fefefe",
+  "accent": "#fefefe"
  }
 }

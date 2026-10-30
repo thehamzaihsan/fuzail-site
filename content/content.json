@@ -1,5 +1,5 @@
 {
- "rev": 16,
+ "rev": 17,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -1141,7 +1141,7 @@
   ]
  },
  "about": {
-  "photo": "",
+  "photo": "fuzail-ahmed-photo",
   "title": "3D Artist, AI Engineer & Software / Game Developer",
   "summary": "I'm a 3D modeler, environment designer and CGI specialist with a strong computer science foundation. I build high-fidelity visual assets, interactive simulations and intelligent software pipelines — from commercial-grade 3D product designs, precise texturing and cinematic lighting for freelance clients and PEAK Company, to end-to-end CGI productions where I design and animate 3D garments in Clo3D and Blender, composite them into live footage, and finish them with motion graphics in After Effects and sound design in Premiere Pro.\n\nOn the technical side I work in applied AI and software engineering: I lead development of AXIS, a physics-based surgical simulation with real-time feedback; built a production-ready RAG pipeline that translates Gen-Z slang into standard English; and trained a deep learning pneumonia detection system that reaches 90–95% accuracy. I'm completing my Bachelor's in Computer Science, bridging cutting-edge 3D graphics pipelines and cloud-native AI.",
   "cv": "",
@@ -1242,6 +1242,7 @@
      "Video Editing & Sound Design"
     ]
    }
-  ]
+  ],
+  "cvPdf": "assets/cv/fuzail-ahmed-cv.pdf"
  }
 }

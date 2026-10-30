@@ -24,8 +24,11 @@ const title = AB.title || A.role || '';
 $('#title').innerHTML = esc(title).replace(/(3D[^,&]*)/i, '<em>$1</em>').replace(/(AI[^,&]*|Engineer[^,&]*)/, '<span class="t">$1</span>');
 $('#ringText').textContent = (title ? title.toUpperCase().replace(/\s*[,&]\s*/g, ' • ') : '3D ARTIST • ENGINEER') + ' • ';
 const btns = [];
-if (safe(AB.cv)) btns.push(`<a class="btn btn--warm" href="${esc(AB.cv)}" target="_blank" rel="noopener noreferrer">Download CV <i>↓</i></a>`);
-if (EMAIL) btns.push(`<a class="btn ${safe(AB.cv) ? '' : 'btn--warm'}" href="mailto:${esc(EMAIL)}">Email me <i>→</i></a>`);
+const CV_PDF = /^assets\/cv\/[a-z0-9][a-z0-9_-]*\.pdf$/.test(AB.cvPdf || '') ? AB.cvPdf : '';
+const CV_URL = CV_PDF || safe(AB.cv);
+if (CV_PDF) btns.push(`<a class="btn btn--warm" href="#cv">View CV <i>↓</i></a><a class="btn" href="${esc(CV_PDF)}" download="Fuzail_Ahmed_CV.pdf">Download CV <i>⤓</i></a>`);
+else if (CV_URL) btns.push(`<a class="btn btn--warm" href="${esc(CV_URL)}" target="_blank" rel="noopener noreferrer">Download CV <i>↓</i></a>`);
+if (EMAIL) btns.push(`<a class="btn ${CV_URL ? '' : 'btn--warm'}" href="mailto:${esc(EMAIL)}">Email me <i>→</i></a>`);
 btns.push(`<a class="btn" href="#experience">Experience <i>↓</i></a>`);
 $('#heroBtns').innerHTML = btns.join('');
 $('#facts').innerHTML = (AB.facts || []).filter((f) => f.label || f.value).map((f) => `<div><dt>${esc(f.label)}</dt><dd>${esc(f.value)}</dd></div>`).join('');
@@ -70,13 +73,74 @@ if (!edu.length) $('#education').hidden = true;
 /* contact */
 $('#mailBig').href = 'mailto:' + EMAIL;
 const links = [`<button class="btn btn--warm" id="copyMail">${esc(EMAIL)} <i>⧉</i></button>`];
-if (safe(AB.cv)) links.push(`<a class="btn" href="${esc(AB.cv)}" target="_blank" rel="noopener noreferrer">CV <i>↓</i></a>`);
+if (CV_URL) links.push(`<a class="btn" href="${esc(CV_URL)}" ${CV_PDF ? 'download="Fuzail_Ahmed_CV.pdf"' : 'target="_blank" rel="noopener noreferrer"'}>CV <i>↓</i></a>`);
 if (D.github) links.push(`<a class="btn" href="https://github.com/${esc(D.github)}" target="_blank" rel="noopener noreferrer me">GitHub <i>↗</i></a>`);
 (A.socials || []).filter((s) => !s.hidden && safe(s.url)).forEach((s) => links.push(`<a class="btn" href="${esc(s.url)}" target="_blank" rel="noopener noreferrer me">${esc(s.label)} <i>↗</i></a>`));
 $('#contactRow').innerHTML = links.join('');
 const copy = (e) => { e.preventDefault(); navigator.clipboard?.writeText(EMAIL).then(() => toast('Email copied — talk soon!'), () => (location.href = 'mailto:' + EMAIL)); };
 $('#copyMail').addEventListener('click', copy); $('#mailBig').addEventListener('click', copy);
 $('#year').textContent = new Date().getFullYear();
+
+/* CV viewer (pdf.js renders the pages; PDF scripts never run) */
+async function cvViewer() {
+  if (!CV_PDF) return;
+  const sec = $('#cv'); sec.hidden = false;
+  const box = $('#cvPagesBox');
+  $('#cvOpen').href = CV_PDF; $('#cvDown').href = CV_PDF; $('#cvDown').setAttribute('download', 'Fuzail_Ahmed_CV.pdf');
+  $('#cvName').textContent = 'Fuzail_Ahmed_CV.pdf';
+  let pdf;
+  try {
+    const lib = await import('../vendor/pdfjs/pdf.min.mjs');
+    lib.GlobalWorkerOptions.workerSrc = new URL('../vendor/pdfjs/pdf.worker.min.mjs', import.meta.url).href;
+    pdf = await lib.getDocument({ url: CV_PDF, isEvalSupported: false, enableXfa: false }).promise;
+  } catch (e) {
+    console.warn('CV viewer fallback:', e);
+    box.innerHTML = `<iframe class="cvv__fallback" src="${esc(CV_PDF)}#view=FitH" title="CV"></iframe>`;
+    $('.cvv__nav').hidden = true; return;
+  }
+  $('#cvPages').textContent = `${pdf.numPages} page${pdf.numPages > 1 ? 's' : ''}`;
+  box.innerHTML = '';
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const wrap = document.createElement('div'); wrap.className = 'cvv__page'; wrap.dataset.n = i;
+    wrap.innerHTML = `<span class="num">${i} / ${pdf.numPages}</span>`;
+    const first = i === 1 ? await pdf.getPage(1) : null;
+    const vp0 = (first || (await pdf.getPage(1))).getViewport({ scale: 1 });
+    wrap.style.aspectRatio = `${vp0.width} / ${vp0.height}`;
+    box.appendChild(wrap); pages.push(wrap);
+  }
+  let zoom = 1;
+  const render = async (wrap, force) => {
+    if (wrap._busy || (wrap._z === zoom && !force)) return;
+    wrap._busy = true;
+    const page = await pdf.getPage(+wrap.dataset.n);
+    const w = wrap.clientWidth || 800, base = page.getViewport({ scale: 1 });
+    const scale = (w / base.width) * Math.min(devicePixelRatio || 1, 2) * 1.25;
+    const vp = page.getViewport({ scale });
+    const c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
+    await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    wrap.querySelector('canvas')?.remove(); wrap.appendChild(c); wrap.style.aspectRatio = ''; wrap._z = zoom; wrap._busy = false;
+  };
+  const io2 = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) render(e.target); }), { root: box, rootMargin: '600px 0px' });
+  pages.forEach((p) => io2.observe(p));
+  // page counter + arrows
+  let now = 1;
+  box.addEventListener('scroll', () => {
+    const mid = box.scrollTop + box.clientHeight / 2;
+    const p = pages.find((x) => x.offsetTop + x.offsetHeight > mid) || pages[pages.length - 1];
+    now = +p.dataset.n; $('#cvNow').textContent = `${now} / ${pages.length}`;
+  }, { passive: true });
+  $('#cvNow').textContent = `1 / ${pages.length}`;
+  const go = (n) => { const p = pages[Math.max(0, Math.min(pages.length - 1, n - 1))]; box.scrollTop = p.offsetTop - 20; };
+  $('#cvPrev').onclick = () => go(now - 1); $('#cvNext').onclick = () => go(now + 1);
+  $('#cvZoom').onclick = () => {
+    zoom = zoom === 1 ? 1.5 : 1; $('#cvZoom').textContent = zoom === 1 ? 'Zoom +' : 'Zoom −';
+    box.style.setProperty('--pw', zoom === 1 ? '880px' : '1320px');
+    setTimeout(() => pages.forEach((p) => { const r = p.getBoundingClientRect(), b = box.getBoundingClientRect(); if (r.bottom > b.top - 600 && r.top < b.bottom + 600) render(p, true); else p._z = 0; }), 420);
+  };
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => pages.forEach((p) => { p._z = 0; }), 300); });
+}
+cvViewer();
 
 /* nav + reveals */
 addEventListener('scroll', () => $('.nav').classList.toggle('is-solid', scrollY > 30), { passive: true });

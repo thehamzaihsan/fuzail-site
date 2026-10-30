@@ -163,6 +163,7 @@ DEV = O({
 })
 ABOUT = O({
     "photo": IMG, "title": S(120), "summary": S(3000), "cv": HREF, "facts": L(PAIR, 8),
+    "cvPdf": RX(re.compile(r"^assets/cv/[a-z0-9][a-z0-9_-]{0,60}\.pdf$"), "upload a PDF", empty=True),
     "creative": L(O({"when": S(40), "title": S(100, False), "org": S(100), "note": S(400), "hidden": BOOL}, ("title",)), 20),
     "projects3d": L(O({"title": S(100, False), "when": S(40), "role": S(100), "note": S(400), "image": IMG, "hidden": BOOL}, ("title",)), 20),
     "skills3d": L(O({"title": S(60), "items": TAGS}), 8),

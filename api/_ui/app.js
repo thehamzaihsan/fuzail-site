@@ -962,7 +962,21 @@ VIEWS_EXTRA.aboutme = (v) => {
     { k: 'photo', label: 'Profile photo', t: 'image', optional: true },
     { k: 'title', label: 'Title under your name', t: 'text', max: 120 },
     { k: 'summary', label: 'Summary (leave an empty line between paragraphs)', t: 'textarea', max: 3000, rows: 9 },
-    { k: 'cv', label: 'CV download link (https://…) — adds a “Download CV” button', t: 'text', max: 300, ph: 'https://drive.google.com/…' },
+    { k: 'cvPdf', t: 'custom', label: '', render: (obj, set) => {
+      const b = el(`<div><label style="display:block;margin-bottom:6px">CV (PDF) — shown in a page viewer on the About page, with a download button</label>
+        <div class="single"><div class="th" style="display:grid;place-items:center;font-family:var(--mono);font-size:11px;color:var(--brand)">PDF</div><span></span>
+        <label class="btn xs" style="cursor:pointer">Upload PDF<input type="file" accept="application/pdf,.pdf" hidden></label><button type="button" class="icon-btn" title="Remove">${ICON.x}</button></div></div>`);
+      const draw = () => { $('span', b).textContent = obj.cvPdf ? obj.cvPdf.replace('assets/cv/', '') : 'No CV uploaded'; $('.icon-btn', b).hidden = !obj.cvPdf; };
+      $('input', b).onchange = async (e) => {
+        const f = e.target.files[0]; if (!f) return;
+        $('span', b).textContent = 'Uploading…';
+        try { const r = await upload('pdf', f); set(r.file); draw(); toast('CV uploaded — publish to put it live', 'ok'); } catch (er) { toast(er.message, 'bad'); draw(); }
+        e.target.value = '';
+      };
+      $('.icon-btn', b).onclick = () => { set(''); draw(); };
+      draw(); return b;
+    } },
+    { k: 'cv', label: 'Or a CV link (https://…) — used only when no PDF is uploaded', t: 'text', max: 300, ph: 'https://drive.google.com/…' },
     { k: 'facts', label: 'Quick facts under the photo', t: 'pairs', maxItems: 8, ph1: 'Label e.g. Based in', ph2: 'Value e.g. Islamabad' },
   ], AB, touch));
   v.appendChild(p1);
