@@ -117,10 +117,15 @@ async function cvViewer() {
   pages.forEach((p) => io2.observe(p));
   thumbs.forEach((t) => draw(+t.dataset.n, t, 96));
   let now = 1;
-  const setNow = (v) => { now = v; $('#cvNow').textContent = pad(v); thumbs.forEach((t) => t.classList.toggle('is-on', +t.dataset.n === v)); };
+  const hint = $('#cvHint'); hint.hidden = n < 2;
+  const setNow = (v) => {
+    now = v; $('#cvNow').textContent = pad(v); thumbs.forEach((t) => t.classList.toggle('is-on', +t.dataset.n === v));
+    const end = v >= n; hint.classList.toggle('is-end', end); $('.cvhint__txt', hint).textContent = end ? 'back to top' : 'scroll'; hint.setAttribute('aria-label', end ? 'Back to the first page' : 'Next page');
+  };
   box.addEventListener('scroll', () => { setNow(Math.min(n, Math.round(box.scrollTop / box.clientHeight) + 1)); }, { passive: true });
   const go = (v) => { v = Math.max(1, Math.min(n, v)); box.scrollTo({ top: (v - 1) * box.clientHeight, behavior: reduce ? 'auto' : 'smooth' }); };
   $('#cvPrev').onclick = () => go(now - 1); $('#cvNext').onclick = () => go(now + 1);
+  hint.onclick = () => go(now >= n ? 1 : now + 1);
   $('#cvThumbs').addEventListener('click', (e) => { const t = e.target.closest('[data-n]'); if (t) go(+t.dataset.n); });
   box.addEventListener('keydown', (e) => { if (['ArrowDown', 'ArrowRight', 'PageDown'].includes(e.key)) { e.preventDefault(); go(now + 1); } if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(now - 1); } });
   setNow(1);
