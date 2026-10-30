@@ -59,14 +59,17 @@
 
   <!-- ░░ CV ░░ -->
   <section class="cvsec" id="cv" hidden>
-    <div class="head"><p class="eyebrow">( the full cv )</p><h2>Curriculum vitae</h2></div>
-    <div class="cvv reveal">
-      <div class="cvv__bar">
-        <span class="cvv__name"><i>PDF</i><b id="cvName">Fuzail_Ahmed.pdf</b><em id="cvPages"></em></span>
-        <span class="cvv__nav"><button type="button" id="cvPrev" aria-label="Previous page">‹</button><span id="cvNow">1</span><button type="button" id="cvNext" aria-label="Next page">›</button></span>
-        <span class="cvv__acts"><button type="button" id="cvZoom" aria-label="Zoom">Zoom +</button><a id="cvOpen" target="_blank" rel="noopener">Open ↗</a><a id="cvDown" class="dl" download>Download ↓</a></span>
-      </div>
-      <div class="cvv__pages" id="cvPagesBox"><p class="cvv__load">Loading CV…</p></div>
+    <div class="cvsec__side">
+      <p class="eyebrow">( the full cv )</p>
+      <h2>Curri&shy;culum<br><span>vitae</span></h2>
+      <p class="cvsec__lede">Everything in one place — experience, education, skills and projects across 3D and engineering.</p>
+      <div class="cvsec__count"><b id="cvNow">01</b><span>/ <i id="cvTotal">04</i></span></div>
+      <div class="cvsec__thumbs" id="cvThumbs"></div>
+      <div class="cvsec__nav"><button type="button" id="cvPrev" aria-label="Previous page">←</button><button type="button" id="cvNext" aria-label="Next page">→</button></div>
+      <div class="cvsec__acts"><a id="cvDown" class="btn btn--warm" download>Download PDF <i>⤓</i></a><a id="cvOpen" class="btn" target="_blank" rel="noopener">Open full screen <i>↗</i></a></div>
+    </div>
+    <div class="cvsec__view reveal">
+      <div class="cvv" id="cvPagesBox" tabindex="0" aria-label="CV pages — scroll or use the arrows"><p class="cvv__load">Loading CV…</p></div>
     </div>
   </section>
 

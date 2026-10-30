@@ -81,64 +81,50 @@ const copy = (e) => { e.preventDefault(); navigator.clipboard?.writeText(EMAIL).
 $('#copyMail').addEventListener('click', copy); $('#mailBig').addEventListener('click', copy);
 $('#year').textContent = new Date().getFullYear();
 
-/* CV viewer (pdf.js renders the pages; PDF scripts never run) */
+/* CV viewer (pdf.js renders the pages; PDF scripts never run) — one page fills the frame, scroll or arrows flip */
 async function cvViewer() {
   if (!CV_PDF) return;
   const sec = $('#cv'); sec.hidden = false;
   const box = $('#cvPagesBox');
   $('#cvOpen').href = CV_PDF; $('#cvDown').href = CV_PDF; $('#cvDown').setAttribute('download', 'Fuzail_Ahmed_CV.pdf');
-  $('#cvName').textContent = 'Fuzail_Ahmed_CV.pdf';
-  let pdf;
+  let pdf, lib;
   try {
-    const lib = await import('../vendor/pdfjs/pdf.min.mjs');
+    lib = await import('../vendor/pdfjs/pdf.min.mjs');
     lib.GlobalWorkerOptions.workerSrc = new URL('../vendor/pdfjs/pdf.worker.min.mjs', import.meta.url).href;
     pdf = await lib.getDocument({ url: CV_PDF, isEvalSupported: false, enableXfa: false }).promise;
   } catch (e) {
     console.warn('CV viewer fallback:', e);
     box.innerHTML = `<iframe class="cvv__fallback" src="${esc(CV_PDF)}#view=FitH" title="CV"></iframe>`;
-    $('.cvv__nav').hidden = true; return;
+    $('.cvsec__nav').hidden = true; return;
   }
-  $('#cvPages').textContent = `${pdf.numPages} page${pdf.numPages > 1 ? 's' : ''}`;
-  box.innerHTML = '';
-  const pages = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const wrap = document.createElement('div'); wrap.className = 'cvv__page'; wrap.dataset.n = i;
-    wrap.innerHTML = `<span class="num">${i} / ${pdf.numPages}</span>`;
-    const first = i === 1 ? await pdf.getPage(1) : null;
-    const vp0 = (first || (await pdf.getPage(1))).getViewport({ scale: 1 });
-    wrap.style.aspectRatio = `${vp0.width} / ${vp0.height}`;
-    box.appendChild(wrap); pages.push(wrap);
-  }
-  let zoom = 1;
-  const render = async (wrap, force) => {
-    if (wrap._busy || (wrap._z === zoom && !force)) return;
-    wrap._busy = true;
-    const page = await pdf.getPage(+wrap.dataset.n);
-    const w = wrap.clientWidth || 800, base = page.getViewport({ scale: 1 });
-    const scale = (w / base.width) * Math.min(devicePixelRatio || 1, 2) * 1.25;
-    const vp = page.getViewport({ scale });
+  const n = pdf.numPages, pad = (v) => String(v).padStart(2, '0');
+  const first = await pdf.getPage(1), vp1 = first.getViewport({ scale: 1 });
+  const ar = `${vp1.width} / ${vp1.height}`;
+  box.style.setProperty('--ar', ar); box.style.setProperty('--arn', (vp1.width / vp1.height).toFixed(4));
+  $('#cvTotal').textContent = pad(n);
+  box.innerHTML = Array.from({ length: n }, (_, i) => `<div class="cvv__page" data-n="${i + 1}" style="--ar:${ar}"></div>`).join('');
+  $('#cvThumbs').innerHTML = Array.from({ length: n }, (_, i) => `<button type="button" data-n="${i + 1}" aria-label="Page ${i + 1}" style="aspect-ratio:${ar}"></button>`).join('');
+  const pages = $$('.cvv__page', box), thumbs = $$('#cvThumbs button');
+  const draw = async (num, target, width, q = 1) => {
+    const page = await pdf.getPage(num), base = page.getViewport({ scale: 1 });
+    const vp = page.getViewport({ scale: (width / base.width) * q });
     const c = document.createElement('canvas'); c.width = Math.floor(vp.width); c.height = Math.floor(vp.height);
     await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
-    wrap.querySelector('canvas')?.remove(); wrap.appendChild(c); wrap.style.aspectRatio = ''; wrap._z = zoom; wrap._busy = false;
+    target.querySelector('canvas')?.remove(); target.appendChild(c);
   };
-  const io2 = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) render(e.target); }), { root: box, rootMargin: '600px 0px' });
+  const render = (p) => { const w = p.clientWidth || 700; if (p._w === w) return; p._w = w; draw(+p.dataset.n, p, w, Math.min(devicePixelRatio || 1, 2) * 1.3); };
+  const io2 = new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) render(e.target); }), { root: box, rootMargin: '100% 0px' });
   pages.forEach((p) => io2.observe(p));
-  // page counter + arrows
+  thumbs.forEach((t) => draw(+t.dataset.n, t, 96));
   let now = 1;
-  box.addEventListener('scroll', () => {
-    const mid = box.scrollTop + box.clientHeight / 2;
-    const p = pages.find((x) => x.offsetTop + x.offsetHeight > mid) || pages[pages.length - 1];
-    now = +p.dataset.n; $('#cvNow').textContent = `${now} / ${pages.length}`;
-  }, { passive: true });
-  $('#cvNow').textContent = `1 / ${pages.length}`;
-  const go = (n) => { const p = pages[Math.max(0, Math.min(pages.length - 1, n - 1))]; box.scrollTop = p.offsetTop - 20; };
+  const setNow = (v) => { now = v; $('#cvNow').textContent = pad(v); thumbs.forEach((t) => t.classList.toggle('is-on', +t.dataset.n === v)); };
+  box.addEventListener('scroll', () => { setNow(Math.min(n, Math.round(box.scrollTop / box.clientHeight) + 1)); }, { passive: true });
+  const go = (v) => { v = Math.max(1, Math.min(n, v)); box.scrollTo({ top: (v - 1) * box.clientHeight, behavior: reduce ? 'auto' : 'smooth' }); };
   $('#cvPrev').onclick = () => go(now - 1); $('#cvNext').onclick = () => go(now + 1);
-  $('#cvZoom').onclick = () => {
-    zoom = zoom === 1 ? 1.5 : 1; $('#cvZoom').textContent = zoom === 1 ? 'Zoom +' : 'Zoom −';
-    box.style.setProperty('--pw', zoom === 1 ? '880px' : '1320px');
-    setTimeout(() => pages.forEach((p) => { const r = p.getBoundingClientRect(), b = box.getBoundingClientRect(); if (r.bottom > b.top - 600 && r.top < b.bottom + 600) render(p, true); else p._z = 0; }), 420);
-  };
-  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => pages.forEach((p) => { p._z = 0; }), 300); });
+  $('#cvThumbs').addEventListener('click', (e) => { const t = e.target.closest('[data-n]'); if (t) go(+t.dataset.n); });
+  box.addEventListener('keydown', (e) => { if (['ArrowDown', 'ArrowRight', 'PageDown'].includes(e.key)) { e.preventDefault(); go(now + 1); } if (['ArrowUp', 'ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(now - 1); } });
+  setNow(1);
+  let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => pages.forEach((p) => { p._w = 0; const r = p.getBoundingClientRect(), b = box.getBoundingClientRect(); if (r.bottom > b.top && r.top < b.bottom) render(p); }), 250); });
 }
 cvViewer();
 

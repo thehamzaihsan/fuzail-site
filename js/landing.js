@@ -36,7 +36,8 @@ function applyClip() {
     code.style.clipPath = `polygon(${x1}px 0, ${W}px 0, ${W}px ${H}px, ${x2}px ${H}px)`;
   }
   // the profile photo sits on the middle of the seam
-  if (me) { const cxp = (seamPts()[0][0] + seamPts()[1][0]) / 2, cyp = (seamPts()[0][1] + seamPts()[1][1]) / 2; me.style.transform = `translate3d(${cxp}px, ${cyp}px, 0) translate(-50%, -50%)`; }
+  // the photo is pinned to the centre of the screen (the seam always crosses it when the split is even)
+  if (me) me.style.transform = `translate3d(${W / 2}px, ${H / 2}px, 0) translate(-50%, -50%)`;
   // keep each side's content centred in the part of the screen it owns, and fade it as it gets squeezed
   const a = S.s, b = 1 - S.s;
   const stage = $('#artStage');
@@ -273,8 +274,10 @@ function frame(now) {
   const dt = Math.min(50, now - last); last = now;
   if (!S.leaving) {
     // lean toward the side under the cursor
-    const hov = pointerIn && !meHover ? sideAt(mx, my) : null;
-    S.target = hov === 'art' ? 0.6 : hov === 'code' ? 0.4 : 0.5;
+    // near the photo the split settles back to the middle, so nothing slides away from the cursor
+    const r = (me.offsetWidth || 180) / 2, nearMe = meHover || Math.hypot(mx - W / 2, my - H / 2) < r * 2.4;
+    const hov = pointerIn && !nearMe ? sideAt(mx, my) : null;
+    S.target = hov === 'art' ? 0.58 : hov === 'code' ? 0.42 : 0.5;
     art.classList.toggle('is-hot', hov === 'art'); code.classList.toggle('is-hot', hov === 'code');
   }
   const k = S.leaving ? 0.075 : 0.06;
