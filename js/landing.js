@@ -37,7 +37,6 @@ function applyClip() {
   }
   // the profile photo sits on the middle of the seam
   // the photo is pinned to the centre of the screen (the seam always crosses it when the split is even)
-  if (me) me.style.transform = `translate3d(${W / 2}px, ${H / 2}px, 0) translate(-50%, -50%)`;
   // keep each side's content centred in the part of the screen it owns, and fade it as it gets squeezed
   const a = S.s, b = 1 - S.s;
   const stage = $('#artStage');
@@ -257,9 +256,6 @@ addEventListener('pageshow', (e) => { if (e.persisted) { S.leaving = false; S.ta
 
 // ───────── the profile photo → About page ─────────
 let meHover = false;
-if (AB.photo) { const im = $('#mePhoto'); im.src = asset(`assets/thumb/${AB.photo}.webp`); im.onload = () => { im.hidden = false; $('#meMono').hidden = true; }; }
-const initials = (A.name || 'Fuzail Ahmed').split(/\s+/).map((w) => w[0]).join('').slice(0, 2).toUpperCase();
-$('#meMono').textContent = initials;
 me.addEventListener('pointerenter', () => { meHover = true; S.flash = Math.max(S.flash, 0.35); prefetch('about.html'); });
 me.addEventListener('pointerleave', () => { meHover = false; });
 me.addEventListener('click', (e) => {
@@ -275,7 +271,7 @@ function frame(now) {
   if (!S.leaving) {
     // lean toward the side under the cursor
     // near the photo the split settles back to the middle, so nothing slides away from the cursor
-    const r = (me.offsetWidth || 180) / 2, nearMe = meHover || Math.hypot(mx - W / 2, my - H / 2) < r * 2.4;
+    const nearMe = meHover;
     const hov = pointerIn && !nearMe ? sideAt(mx, my) : null;
     S.target = hov === 'art' ? 0.58 : hov === 'code' ? 0.42 : 0.5;
     art.classList.toggle('is-hot', hov === 'art'); code.classList.toggle('is-hot', hov === 'code');
