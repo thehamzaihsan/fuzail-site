@@ -1,5 +1,5 @@
 {
- "rev": 20,
+ "rev": 21,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -72,7 +72,7 @@
    "inspector": true
   },
   "dupas": {
-   "file": "assets/models/dupas_label.glb",
+   "file": "assets/models/dupas_web2.glb",
    "title": "Dupas Lumin",
    "word": "LUMIN",
    "kind": "Commercial Banner",
