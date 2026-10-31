@@ -1,5 +1,5 @@
 {
- "rev": 18,
+ "rev": 19,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -355,9 +355,14 @@
     "oud_front",
     "oud_close",
     "oud_45",
-    "oud_rasp",
-    "oud_top"
+    "oud_top",
+    "oud_rasp"
    ],
+   "views": {
+    "oud_rasp": {
+     "size": "full"
+    }
+   },
    "video": "",
    "hidden": false
   },
