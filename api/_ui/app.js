@@ -555,12 +555,15 @@ function buildForm(fields, obj, onChange = () => {}) {
         const g = el(`<div class="imgs"></div>`);
         const draw = () => {
           const list = obj[f.k] || [];
-          g.innerHTML = list.map((id, i) => `<div class="it" data-i="${i}"><img src="${THUMB(id)}" alt="" loading="lazy"><span class="n">${i === 0 ? 'Cover' : i + 1}</span><button type="button" data-x="${i}">×</button></div>`).join('') +
+          const views = f.views ? (obj.views || {}) : {};
+          g.innerHTML = list.map((id, i) => `<div class="it ${views[id] ? 'edited' : ''}" data-i="${i}"><img src="${THUMB(id)}" alt="" loading="lazy" style="${f.views ? viewImgCss(views[id]) : ''}"><span class="n">${i === 0 ? 'Cover' : i + 1}</span><button type="button" data-x="${i}" title="Remove">×</button>${f.views ? `<button type="button" class="ed" data-e="${i}" title="Edit photo — size, shape, zoom, focus, light">${ICON.edit}</button>${views[id] ? '<span class="tweak">edited</span>' : ''}` : ''}</div>`).join('') +
             `<button type="button" class="add" data-add>${ICON.plus}<br>Add / upload</button>`;
         };
         g.onclick = async (e) => {
           const x = e.target.closest('[data-x]');
-          if (x) { obj[f.k].splice(+x.dataset.x, 1); set(obj[f.k]); draw(); return; }
+          const ed = e.target.closest('[data-e]');
+          if (ed) { photoEditor(obj, f.k, +ed.dataset.e, () => { set(obj[f.k]); draw(); }); return; }
+          if (x) { const gone = obj[f.k].splice(+x.dataset.x, 1)[0]; if (f.views && obj.views && !obj[f.k].includes(gone)) delete obj.views[gone]; set(obj[f.k]); draw(); return; }
           if (e.target.closest('[data-add]')) { const r = await pickMedia({ kind: 'image', multi: true, selected: obj[f.k] || [] }); if (r) { obj[f.k] = r.slice(0, f.maxItems || 24); set(obj[f.k]); draw(); } }
         };
         sortable(g, '.it', (a, b2) => { move(obj[f.k], a, b2); set(obj[f.k]); draw(); });
@@ -693,6 +696,98 @@ function listPage(v, cfg) {
   sortable(list, '.row', (a, b) => { move(get(), a, b); draw(); touch(); });
   draw();
   if (after) v.appendChild(after());
+}
+
+/* ─────────────── per-photo editor (layout + look) ─────────────── */
+const AUTO_CLS = (n, i) => ((n >= 4 ? ['g-a', 'g-b', 'g-c', 'g-d'] : n === 3 ? ['g-a', 'g-b', 'g-w'] : n === 2 ? ['g-c', 'g-d'] : ['g-w'])[i] || 'g-h');
+const AUTO_BOX = { 'g-a': [4, '4/5'], 'g-b': [2, '4/5.2'], 'g-c': [3, '4/3'], 'g-d': [3, '4/3'], 'g-w': [6, '21/9'], 'g-h': [2, '4/5'] };
+const SIZE_SPAN = { sm: 2, md: 3, lg: 4, full: 6 }, SIZE_RATIO = { sm: '4/5', md: '4/3', lg: '16/10', full: '21/9' };
+const VIEW_DEF = { size: 'auto', ratio: 'auto', fit: 'cover', zoom: 1, x: 50, y: 50, bright: 1, contrast: 1, sat: 1, gray: false, flip: false, caption: '' };
+function viewBox(v, n, i) {
+  const auto = AUTO_BOX[AUTO_CLS(n, i)];
+  const span = v && SIZE_SPAN[v.size] ? SIZE_SPAN[v.size] : auto[0];
+  const ratio = v && v.ratio && v.ratio !== 'auto' ? v.ratio : v && SIZE_RATIO[v.size] ? SIZE_RATIO[v.size] : auto[1];
+  return { span, ratio };
+}
+function viewImgCss(v) {
+  if (!v) return '';
+  const x = v.x ?? 50, y = v.y ?? 50, z = v.zoom || 1, f = [];
+  if ((v.bright ?? 1) !== 1) f.push(`brightness(${v.bright})`); if ((v.contrast ?? 1) !== 1) f.push(`contrast(${v.contrast})`);
+  if ((v.sat ?? 1) !== 1) f.push(`saturate(${v.sat})`); if (v.gray) f.push('grayscale(1)');
+  return [`object-position:${x}% ${y}%`, `transform-origin:${x}% ${y}%`, `scale:${v.flip ? -z : z} ${z}`, v.fit === 'contain' ? 'object-fit:contain' : 'object-fit:cover', f.length ? `filter:${f.join(' ')}` : ''].join(';');
+}
+// keep only settings that differ from the defaults, so content.json stays small
+function cleanView(v) {
+  const out = {};
+  Object.entries(v).forEach(([k, val]) => { if (k in VIEW_DEF && val !== VIEW_DEF[k] && val !== '' && val != null) out[k] = typeof val === 'number' ? +(+val).toFixed(3) : val; });
+  return Object.keys(out).length ? out : null;
+}
+function photoEditor(owner, listKey, index, onDone) {
+  const ids = owner[listKey] || [], id = ids[index];
+  owner.views = owner.views || {};
+  const v = { ...VIEW_DEF, ...(owner.views[id] || {}) };
+  const seg = (k, opts) => `<div class="pe-seg" data-k="${k}">${opts.map(([val, l]) => `<button type="button" data-v="${val}">${esc(l)}</button>`).join('')}</div>`;
+  const sl = (k, label, min, max, step, fmt) => `<div class="pe-row"><label>${label}<em data-o="${k}"></em></label><input type="range" data-k="${k}" min="${min}" max="${max}" step="${step}" data-fmt="${fmt}"></div>`;
+  const b = openModal(`<div class="mhead"><h3>Edit photo <span class="muted mono" style="font-size:12px;margin-left:8px">${esc(id)} · ${index + 1} of ${ids.length}</span></h3></div>
+    <div class="mbody pe">
+      <div class="pe-left">
+        <div class="pe-stage"><figure class="pe-fig" id="peFig"><img src="${IMG(id)}" alt="" id="peImg" draggable="false"><span class="pe-dot" id="peDot"></span></figure></div>
+        <p class="help" style="text-align:center;margin:8px 0 0">Click or drag on the photo to set the focus point — zoom and cropping centre on it.</p>
+        <div class="pe-sect">Where it sits in the gallery</div>
+        <div class="pe-grid" id="peGrid"></div>
+      </div>
+      <div class="pe-right">
+        <div class="pe-sect">Layout</div>
+        <div class="pe-row"><label>Size in the gallery</label>${seg('size', [['auto', 'Auto'], ['sm', 'Small'], ['md', 'Half'], ['lg', 'Large'], ['full', 'Full width']])}</div>
+        <div class="pe-row"><label>Shape</label>${seg('ratio', [['auto', 'Auto'], ['1/1', 'Square'], ['4/5', 'Portrait'], ['3/4', 'Tall'], ['4/3', 'Classic'], ['16/10', 'Wide'], ['16/9', '16:9'], ['21/9', 'Cinema']])}</div>
+        <div class="pe-row"><label>Fit</label>${seg('fit', [['cover', 'Fill frame (crop)'], ['contain', 'Show whole photo']])}</div>
+        ${sl('zoom', 'Zoom', 1, 3, 0.01, 'pct')}
+        <div class="pe-sect">Look</div>
+        ${sl('bright', 'Brightness', 0.3, 2, 0.01, 'pct')}
+        ${sl('contrast', 'Contrast', 0.3, 2, 0.01, 'pct')}
+        ${sl('sat', 'Saturation', 0, 3, 0.01, 'pct')}
+        <label class="toggle"><input type="checkbox" data-k="gray"><span>Black &amp; white</span></label>
+        <label class="toggle" style="margin-top:8px"><input type="checkbox" data-k="flip"><span>Mirror (flip horizontally)</span></label>
+        <div class="pe-sect">Caption</div>
+        <div class="f" style="margin:0"><input type="text" data-k="caption" maxlength="120" placeholder="Default: ${esc(owner.title || 'Title')} — ${String(index + 1).padStart(2, '0')}"></div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn ghost" data-a="reset" style="margin-right:auto">Reset photo</button>${index > 0 ? '<button class="btn ghost" data-a="prev">← Previous</button>' : ''}${index < ids.length - 1 ? '<button class="btn ghost" data-a="next">Next →</button>' : ''}<button class="btn ghost" data-a="no">Cancel</button><button class="btn primary" data-a="yes">Apply</button></div>`, 'pe-box');
+  const fig = $('#peFig', b), im = $('#peImg', b), dot = $('#peDot', b);
+  const paint = () => {
+    const box = viewBox(v, ids.length, index);
+    fig.style.aspectRatio = box.ratio.replace('/', ' / ');
+    im.style.cssText = viewImgCss(v);
+    dot.style.left = v.x + '%'; dot.style.top = v.y + '%';
+    $$('.pe-seg', b).forEach((s) => $$('button', s).forEach((x) => x.classList.toggle('on', String(v[s.dataset.k]) === x.dataset.v)));
+    $$('input[type=range]', b).forEach((r) => { r.value = v[r.dataset.k]; $(`[data-o="${r.dataset.k}"]`, b).textContent = Math.round(v[r.dataset.k] * 100) + '%'; });
+    $$('input[type=checkbox]', b).forEach((c) => { c.checked = !!v[c.dataset.k]; });
+    $('input[data-k=caption]', b).value = v.caption || '';
+    // mini map of the whole gallery as it will lay out on the site
+    $('#peGrid', b).innerHTML = ids.map((g, i) => { const vv = i === index ? v : owner.views[g]; const bx = viewBox(vv, ids.length, i);
+      return `<div class="${i === index ? 'on' : ''}" style="grid-column:span ${bx.span};aspect-ratio:${bx.ratio.replace('/', ' / ')}"><img src="${THUMB(g)}" alt="" style="${viewImgCss(vv)}"></div>`; }).join('');
+  };
+  b.addEventListener('click', (e) => { const s = e.target.closest('.pe-seg button'); if (s) { v[s.closest('.pe-seg').dataset.k] = s.dataset.v; paint(); } });
+  b.addEventListener('input', (e) => {
+    const k = e.target.dataset.k; if (!k) return;
+    v[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.type === 'range' ? +e.target.value : e.target.value;
+    if (e.target.type !== 'text') paint();
+  });
+  let drag = false;
+  const focus = (e) => { const r = fig.getBoundingClientRect(); v.x = Math.round(Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100))); v.y = Math.round(Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100))); paint(); };
+  fig.addEventListener('pointerdown', (e) => { drag = true; fig.setPointerCapture(e.pointerId); focus(e); });
+  fig.addEventListener('pointermove', (e) => { if (drag) focus(e); });
+  fig.addEventListener('pointerup', () => { drag = false; });
+  const save = () => { const c = cleanView(v); if (c) owner.views[id] = c; else delete owner.views[id]; touch(); };
+  $('.mfoot', b).addEventListener('click', (e) => {
+    const a = e.target.closest('[data-a]'); if (!a) return;
+    if (a.dataset.a === 'reset') { Object.assign(v, VIEW_DEF); paint(); return; }
+    if (a.dataset.a === 'no') { closeModal(); return; }
+    save(); closeModal(); onDone && onDone();
+    if (a.dataset.a === 'prev') photoEditor(owner, listKey, index - 1, onDone);
+    if (a.dataset.a === 'next') photoEditor(owner, listKey, index + 1, onDone);
+  });
+  paint();
 }
 
 /* ─────────────── colour helpers ─────────────── */
@@ -1055,7 +1150,7 @@ const VIEWS = {
         { k: 'tools', label: 'Software used', t: 'tags', ph: 'Blender, Substance Painter…' },
         { k: 'specs', label: 'Big numbers (up to 3 look best)', t: 'pairs', maxItems: 6, ph1: 'Label e.g. Tris', ph2: 'Value e.g. 110k' },
         { t: 'section', label: 'Media' },
-        { k: 'images', label: 'Renders', t: 'images' },
+        { k: 'images', label: 'Renders', t: 'images', views: true, help: 'Drag to reorder — the first image is the cover. Hover a photo and click the pencil to change its size, shape, zoom, focus point and look.' },
         { k: 'video', label: 'Product film (optional)', t: 'video', optional: true },
         { t: 'section', label: 'Colours' },
         { k: '_c', t: 'custom', render: (obj) => colourHelper(obj, 'images') },

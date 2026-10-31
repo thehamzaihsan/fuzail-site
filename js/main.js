@@ -202,6 +202,26 @@ stmt.innerHTML = String(ARTIST.intro || '').split(' ').map((w) => {
 }).join(' ');
 gsap.to('#statementText .w', { opacity: 1, stagger: 0.05, ease: 'none', scrollTrigger: { trigger: '#statementText', start: 'top 80%', end: 'bottom 45%', scrub: true } });
 
+/* per-photo display settings from the dashboard (size, shape, fit, zoom, focus, light & colour) */
+const num = (v, lo, hi, d) => (typeof v === 'number' && v >= lo && v <= hi ? v : d);
+const SIZE_RATIO = { sm: '4/5', md: '4/3', lg: '16/10', full: '21/9' };
+function viewStyle(v, autoCls) {
+  if (!v) return { cls: autoCls, fig: '', img: '', wrap: '', still: false };
+  const size = /^(sm|md|lg|full)$/.test(v.size) ? v.size : '';
+  const ratio = /^(1\/1|4\/5|3\/4|4\/3|16\/10|16\/9|21\/9)$/.test(v.ratio) ? v.ratio : (size ? SIZE_RATIO[size] : '');
+  const contain = v.fit === 'contain';
+  const x = num(v.x, 0, 100, 50), y = num(v.y, 0, 100, 50), z = num(v.zoom, 1, 3, 1);
+  const f = [];
+  if (num(v.bright, 0.3, 2, 1) !== 1) f.push(`brightness(${v.bright})`);
+  if (num(v.contrast, 0.3, 2, 1) !== 1) f.push(`contrast(${v.contrast})`);
+  if (num(v.sat, 0, 3, 1) !== 1) f.push(`saturate(${v.sat})`);
+  if (v.gray) f.push('grayscale(1)');
+  const img = [`object-position:${x}% ${y}%`, `transform-origin:${x}% ${y}%`, contain ? 'object-fit:contain' : '', f.length ? `filter:${f.join(' ')}` : ''].filter(Boolean).join(';');
+  // zoom & mirror live on a wrapper, because the scroll parallax animates the image's own transform
+  const wrap = (z !== 1 || v.flip) ? `transform-origin:${x}% ${y}%;transform:scale(${v.flip ? -z : z}, ${z})` : '';
+  return { cls: `${size ? 'gs-' + size : autoCls}${ratio ? ' has-ratio' : ''}${contain ? ' is-fit' : ''}`, fig: ratio ? `aspect-ratio:${ratio}` : '', img, wrap, still: contain };
+}
+
 /* ═════════════ FEATURED PROJECTS ═════════════ */
 const featured = $('#featured');
 const lbSets = { ...lbCustom };
@@ -213,6 +233,8 @@ FEATURED.forEach((p, pi) => {
   Object.assign(s.dataset, { bg: p.bg, ink: p.ink, theme: 'dark' });
   s.style.setProperty('--accent', p.accent); s.style.setProperty('--bg', p.bg);
   const layout = p.images.length >= 4 ? ['g-a', 'g-b', 'g-c', 'g-d'] : p.images.length === 3 ? ['g-a', 'g-b', 'g-w'] : p.images.length === 2 ? ['g-c', 'g-d'] : ['g-w'];
+  const V = (p.views && typeof p.views === 'object') ? p.views : {};
+  const cap = (id, i) => (V[id] && V[id].caption) || `${p.title} — ${String(i + 1).padStart(2, '0')}`;
   const titleLines = p.title.split(' ').reduce((acc, w) => { const l = acc[acc.length - 1]; if (l && (l + ' ' + w).length <= 10) acc[acc.length - 1] = l + ' ' + w; else acc.push(w); return acc; }, []);
   s.innerHTML = `
     <div class="proj__head">
@@ -238,11 +260,11 @@ FEATURED.forEach((p, pi) => {
       </div>
     </div>
     <div class="proj__gallery">
-      ${p.images.map((id, i) => `<figure class="shot reveal-img ${layout[i] || 'g-h'}" data-lb="${p.id}" data-i="${i}"><img src="${img(id)}" alt="${esc(p.title)} render ${i + 1}" loading="lazy" data-speed="${i % 2 ? 0.06 : -0.04}"><figcaption>${esc(p.title)} — ${String(i + 1).padStart(2, '0')}</figcaption></figure>`).join('')}
+      ${p.images.map((id, i) => { const s = viewStyle(V[id], layout[i] || 'g-h'); return `<figure class="shot reveal-img ${s.cls}" style="${s.fig}" data-lb="${p.id}" data-i="${i}">${s.wrap ? `<span class="zw" style="${s.wrap}">` : ''}<img src="${img(id)}" alt="${esc(p.title)} render ${i + 1}" loading="lazy" style="${s.img}" ${s.still ? '' : `data-speed="${i % 2 ? 0.06 : -0.04}"`}>${s.wrap ? '</span>' : ''}<figcaption>${esc(cap(id, i))}</figcaption></figure>`; }).join('')}
       ${p.video ? `<figure class="shot reveal-img g-w" data-lb="${p.id}" data-i="${p.images.length}"><video src="assets/video/${p.video}.mp4" poster="assets/video/${p.video}.webp" muted loop playsinline preload="none"></video><figcaption>Product film</figcaption></figure>` : ''}
     </div>`;
   featured.appendChild(s);
-  lbSets[p.id] = [...p.images.map((id) => ({ type: 'img', src: img(id), cap: p.title })), ...(p.video ? [{ type: 'video', src: `assets/video/${p.video}.mp4`, cap: p.title + ' — film' }] : [])];
+  lbSets[p.id] = [...p.images.map((id, i) => ({ type: 'img', src: img(id), cap: (V[id] && V[id].caption) || p.title })), ...(p.video ? [{ type: 'video', src: `assets/video/${p.video}.mp4`, cap: p.title + ' — film' }] : [])];
   gsap.from($$('.proj__title .ln > span', s), { yPercent: 105, duration: 1.2, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: s, start: 'top 70%' } });
   gsap.from($('.proj__no', s), { opacity: 0, x: -30, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: s, start: 'top 70%' } });
   gsap.to($('.proj__float .ring', s), { rotate: 360, ease: 'none', scrollTrigger: { trigger: s, start: 'top bottom', end: 'bottom top', scrub: true } });

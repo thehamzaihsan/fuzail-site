@@ -189,6 +189,12 @@ section { position: relative; }
 .g-c { grid-column: span 3; aspect-ratio: 4/3; } .g-d { grid-column: span 3; aspect-ratio: 4/3; }
 .g-w { grid-column: span 6; aspect-ratio: 21/9; }
 .g-h { grid-column: span 2; aspect-ratio: 4/5; }
+/* sizes chosen per photo in the dashboard */
+.gs-sm { grid-column: span 2; } .gs-md { grid-column: span 3; } .gs-lg { grid-column: span 4; } .gs-full { grid-column: span 6; }
+.shot.has-ratio { align-self: start; }
+.shot.is-fit { background: color-mix(in srgb, currentColor 5%, transparent); }
+.shot.is-fit img { transform: none !important; }
+.shot .zw { display: block; width: 100%; height: 100%; }
 .proj__float { position: absolute; right: var(--pad); top: clamp(70px, 9vw, 140px); width: clamp(160px, 18vw, 300px); aspect-ratio: 1; border-radius: 50%; border: 1px solid color-mix(in srgb, currentColor 30%, transparent); display: grid; place-items: center; text-align: center; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; overflow: hidden; }
 .proj__float canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 
@@ -401,6 +407,7 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
   .proj__float { display: none; }
   .proj__gallery { grid-template-columns: 1fr 1fr; }
   .g-a, .g-c, .g-d, .g-w { grid-column: span 2; } .g-b, .g-h { grid-column: span 1; }
+  .gs-md, .gs-lg, .gs-full { grid-column: span 2; } .gs-sm { grid-column: span 1; }
   .furn__stage { min-height: 520px; }
   .furn__poly { grid-template-columns: 1fr; }
   .furn__img { min-height: 380px; }

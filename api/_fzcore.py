@@ -125,6 +125,11 @@ def D(keyrx, val, mx=200):
 
 
 IMG = RX(ID, "pick an image", empty=True)
+# how one photo is shown inside a gallery: layout (size, shape, fit, zoom, focus) and look (light, colour)
+VIEW = O({"size": RX(re.compile(r"^(auto|sm|md|lg|full)$"), "size"), "ratio": RX(re.compile(r"^(auto|1/1|4/5|3/4|4/3|16/10|16/9|21/9)$"), "shape"),
+          "fit": RX(re.compile(r"^(cover|contain)$"), "fit"), "zoom": NUM(1, 3), "x": NUM(0, 100), "y": NUM(0, 100),
+          "bright": NUM(0.3, 2), "contrast": NUM(0.3, 2), "sat": NUM(0, 3), "gray": BOOL, "flip": BOOL, "caption": S(120)})
+VIEWS = D(ID, VIEW, 60)
 IDV = RX(ID, "invalid id")
 PAIR = O({"label": S(60), "value": S(80)})
 SWATCH = O({"name": S(40), "color": RX(COLOR, "colour like #aabbcc")}, ("color",))
@@ -182,7 +187,7 @@ SCHEMA = O({
     "showroom": L(RX(KEY, "model key"), 30),
     "featured": L(O({"id": IDV, "cat": S(60), "title": S(80, False), "model": RX(KEY, "model key", empty=True), "bg": RX(COLOR, "colour"),
                      "ink": RX(COLOR, "colour"), "accent": RX(COLOR, "colour"), "text": S(2000), "tools": L(S(40), 20),
-                     "specs": L(PAIR, 6), "images": L(IDV, 24), "video": IMG, "hidden": BOOL}, ("id", "title")), 60),
+                     "specs": L(PAIR, 6), "images": L(IDV, 24), "views": VIEWS, "video": IMG, "hidden": BOOL}, ("id", "title")), 60),
     "furniture": L(O({"id": IDV, "title": S(80, False), "model": RX(KEY, "model key"), "poly": L(PAIR, 6),
                       "stages": L(O({"label": S(40), "image": IDV}), 12), "hidden": BOOL}, ("id", "model")), 20),
     "environments": L(O({"id": IDV, "title": S(80), "sub": S(60), "note": S(160), "hidden": BOOL}, ("id",)), 120),
