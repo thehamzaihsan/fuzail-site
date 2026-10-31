@@ -1,5 +1,5 @@
 {
- "rev": 17,
+ "rev": 18,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -391,6 +391,8 @@
     }
    ],
    "images": [
+    "first-photo-5f289a",
+    "top-down-9b06d0",
     "omen_3",
     "omen_exploded",
     "omen_switch",
