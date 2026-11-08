@@ -365,8 +365,8 @@ export class Stage {
         m.scale.setScalar(0.6 + 0.4 * e);
         m.rotation.y = (1 - e) * -1.6;
         m.position.y = (1 - e) * -0.6;
-        m.traverse((o) => { if (o.isMesh) { const ms = Array.isArray(o.material) ? o.material : [o.material]; ms.forEach((x) => { if (!x) return; x.transparent = x.transparent || e < 1; x.opacity = x.userData._op ?? (x.userData._op = x.opacity); x.opacity = x.userData._op * e; }); } });
-        if (e >= 1) m.traverse((o) => { if (o.isMesh) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => { if (!x) return; x.opacity = x.userData._op ?? 1; if (!(x.transmission > 0) && x.userData._op === 1) x.transparent = false; }); });
+        m.traverse((o) => { if (o.isMesh) { const ms = Array.isArray(o.material) ? o.material : [o.material]; ms.forEach((x) => { if (!x) return; if (x.userData._tr === undefined) x.userData._tr = x.transparent; if (e < 1 && !x.transparent) { x.transparent = true; x.needsUpdate = true; } x.opacity = x.userData._op ?? (x.userData._op = x.opacity); x.opacity = x.userData._op * e; }); } });
+        if (e >= 1) m.traverse((o) => { if (o.isMesh) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => { if (!x) return; x.opacity = x.userData._op ?? 1; const tr = x.userData._tr ?? false; if (x.transparent !== tr) { x.transparent = tr; x.needsUpdate = true; } }); });
       }
       if (this.floatAmp) m.position.y += (Math.sin(t * 1.2) * this.floatAmp - (m.userData._fy || 0));
       m.userData._fy = Math.sin(t * 1.2) * this.floatAmp;

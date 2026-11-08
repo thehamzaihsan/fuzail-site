@@ -1,5 +1,5 @@
 {
- "rev": 21,
+ "rev": 22,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -31,7 +31,7 @@
  ],
  "models": {
   "oud": {
-   "file": "assets/models/oud_b.glb",
+   "file": "assets/models/oud_c.glb",
    "title": "J. Janan Oud",
    "word": "JANAN",
    "kind": "Product Visual",
