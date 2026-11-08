@@ -2,6 +2,16 @@ import * as THREE from 'three';
 import { Stage, manager, loadGLTF, setColorway, setMode, explode } from './stage.js';
 import { ARTIST, MODELS, SHOWROOM, FEATURED, FURNITURE, ENVIRONMENTS, COMPARE, ARCHVIZ, MORE, REEL, TOOLKIT, MARQUEE, HIGHLIGHTS, SECTIONS, BUILTIN_SECTIONS, SOCIALS } from './data.js';
 
+// text around a circle: every character gets its own exact slot, so it can never run past the ring or bunch up
+function ringText(str, cx, cy, r, size) {
+  const ch = [...str], n = ch.length;
+  return `<g font-size="${size}" fill="currentColor" font-family="JetBrains Mono, monospace" style="letter-spacing:0" text-anchor="middle">` + ch.map((c, i) => {
+    const a = -90 + (i * 360) / n, t = (a * Math.PI) / 180;
+    const x = (cx + r * Math.cos(t)).toFixed(2), y = (cy + r * Math.sin(t)).toFixed(2);
+    return c === ' ' ? '' : `<text x="${x}" y="${y}" transform="rotate(${(a + 90).toFixed(2)} ${x} ${y})">${c === '&' ? '&amp;' : c === '<' ? '&lt;' : c}</text>`;
+  }).join('') + '</g>';
+}
+
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const root = document.documentElement;
@@ -242,8 +252,8 @@ FEATURED.forEach((p, pi) => {
       <div><span class="proj__cat">${esc(p.cat)}</span><h3 class="proj__title">${titleLines.map((l) => `<span class="ln"><span>${esc(l)}</span></span>`).join('')}</h3></div>
     </div>
     ${p.model ? `<button class="proj__float" data-model="${p.model}" data-cursor="Open" aria-label="Inspect ${esc(p.title)} in 3D">
-      <svg viewBox="0 0 200 200" width="100%" height="100%"><defs><path id="c-${p.id}" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs>
-      <g class="ring" style="transform-origin:100px 100px"><text font-size="13" fill="currentColor" font-family="JetBrains Mono, monospace"><textPath href="#c-${p.id}" textLength="486" lengthAdjust="spacing">INSPECT IN 3D • DRAG • ORBIT • ZOOM •</textPath></text></g>
+      <svg viewBox="0 0 200 200" width="100%" height="100%">
+      <g class="ring" style="transform-origin:100px 100px">${ringText('INSPECT IN 3D • DRAG • ORBIT • ZOOM • ', 100, 100, 64, 12)}</g>
       <circle cx="100" cy="100" r="36" fill="${p.accent}"/><text x="100" y="109" text-anchor="middle" font-size="24" fill="${p.bg}" font-family="Anton, Impact">3D</text></svg>
     </button>` : ''}
     <div class="proj__body">
@@ -267,7 +277,7 @@ FEATURED.forEach((p, pi) => {
   lbSets[p.id] = [...p.images.map((id, i) => ({ type: 'img', src: img(id), cap: (V[id] && V[id].caption) || p.title })), ...(p.video ? [{ type: 'video', src: `assets/video/${p.video}.mp4`, cap: p.title + ' — film' }] : [])];
   gsap.from($$('.proj__title .ln > span', s), { yPercent: 105, duration: 1.2, ease: 'expo.out', stagger: 0.08, scrollTrigger: { trigger: s, start: 'top 70%' } });
   gsap.from($('.proj__no', s), { opacity: 0, x: -30, duration: 1, ease: 'expo.out', scrollTrigger: { trigger: s, start: 'top 70%' } });
-  gsap.to($('.proj__float .ring', s), { rotate: 360, ease: 'none', scrollTrigger: { trigger: s, start: 'top bottom', end: 'bottom top', scrub: true } });
+  gsap.to($('.proj__float .ring', s), { rotation: 360, svgOrigin: '100 100', ease: 'none', scrollTrigger: { trigger: s, start: 'top bottom', end: 'bottom top', scrub: true } });
 });
 $$('[data-bg]').forEach(bindColor);
 document.addEventListener('click', (e) => {

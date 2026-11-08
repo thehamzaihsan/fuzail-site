@@ -132,10 +132,11 @@ body.menu-open .nav { color: #120a06; }
 .rail button.is-active { border-color: var(--hero-ink); }
 .rail button svg { position: absolute; inset: -2px; width: calc(100% + 4px); height: calc(100% + 4px); transform: rotate(-90deg); }
 .rail button svg circle { fill: none; stroke: var(--hero-ink); stroke-width: 2.5; stroke-dasharray: 170; stroke-dashoffset: 170; }
-.hero__count { justify-self: end; display: flex; align-items: center; gap: 18px; font-family: var(--mono); font-size: 13px; }
+.hero__count { justify-self: end; display: flex; align-items: baseline; gap: 14px; font-family: var(--mono); font-size: 13px; }
 .hero__count #heroIdx { font-family: var(--display); font-size: 44px; line-height: 1; }
 .hero__count .sep { opacity: .5; }
-.hero__arrows { display: flex; gap: 8px; }
+.hero__arrows { display: flex; gap: 8px; align-self: center; margin-left: 8px; }
+.hero__count .sep, .hero__count #heroTotal { line-height: 1; }
 .hero__arrows button { width: 48px; height: 48px; border-radius: 50%; border: 1.5px solid currentColor; font-size: 18px; transition: background .3s, color .3s; }
 .hero__arrows button:hover { background: var(--hero-ink); color: var(--hero-bg); }
 .scrollcue { position: absolute; z-index: 3; left: 50%; top: 92px; transform: translateX(-50%); display: none; }

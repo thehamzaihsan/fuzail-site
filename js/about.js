@@ -22,7 +22,8 @@ if (AB.photo) { const im = $('#photoImg'); im.src = `assets/img/${sid(AB.photo)}
 // "3D Artist, AI Engineer & Software / Game Developer" → colour the creative and technical halves
 const title = AB.title || A.role || '';
 $('#title').innerHTML = esc(title).replace(/(3D[^,&]*)/i, '<em>$1</em>').replace(/(AI[^,&]*|Engineer[^,&]*)/, '<span class="t">$1</span>');
-$('#ringText').textContent = (title ? title.toUpperCase().replace(/\s*[,&]\s*/g, ' • ') : '3D ARTIST • ENGINEER') + ' • ';
+{ const str = (title ? title.toUpperCase().replace(/\s*[,&]\s*/g, ' • ') : '3D ARTIST • ENGINEER') + ' • '; const ring = $('#ringText').closest('svg'); const ch = [...str], n = ch.length;
+  ring.querySelector('text').outerHTML = '<g text-anchor="middle" style="letter-spacing:0">' + ch.map((c, i) => { if (c === ' ') return ''; const a = -90 + (i * 360) / n, t = (a * Math.PI) / 180, x = (100 + 88 * Math.cos(t)).toFixed(2), y = (100 + 88 * Math.sin(t)).toFixed(2); return `<text x="${x}" y="${y}" transform="rotate(${(a + 90).toFixed(2)} ${x} ${y})">${c.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</text>`; }).join('') + '</g>'; }
 const btns = [];
 const CV_PDF = /^assets\/cv\/[a-z0-9][a-z0-9_-]*\.pdf$/.test(AB.cvPdf || '') ? AB.cvPdf : '';
 const CV_URL = CV_PDF || safe(AB.cv);
