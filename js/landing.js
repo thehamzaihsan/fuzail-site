@@ -56,7 +56,7 @@ document.addEventListener('pointerleave', () => { pointerIn = false; });
 function sideAt(x, y) {
   const [[x1, y1], [x2, y2]] = seamPts();
   const cross = (x2 - x1) * (y - y1) - (y2 - y1) * (x - x1);
-  return portrait ? (cross < 0 ? 'code' : 'art') : (cross > 0 ? 'art' : 'code');
+  return portrait ? (cross < 0 ? 'art' : 'code') : (cross > 0 ? 'art' : 'code');
 }
 
 // ───────── seam: a glowing cut with shards and sparks flying off it ─────────
