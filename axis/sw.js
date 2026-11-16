@@ -2,11 +2,11 @@
 // next load. The big files (models, Three.js) are served from the cache at once and refreshed in the background, so a
 // re-exported model shows up on the following visit instead of being stuck in the cache forever.
 // Bump CACHE when files are renamed or removed.
-const CACHE = 'axis-web-2';
+const CACHE = 'axis-web-3';
 const FILES = [
   './', './index.html', './css/axis.css', './manifest.webmanifest',
   './js/main.js', './js/ui.js', './js/anatomy.js', './js/physiology.js', './js/particles.js',
-  './js/procedures/stent.js', './js/circulation.js', './js/flowpaths.js', './js/hand.js', './js/guides.js', './js/procedures/puncture.js', './js/labels.js', './js/info.js', './js/explode.js', './js/kidney.js',
+  './js/procedures/stent.js', './js/circulation.js', './js/flowpaths.js', './js/hand.js', './js/guides.js', './js/procedures/puncture.js', './js/labels.js', './js/info.js', './js/explode.js', './js/kidney.js', './js/mobile.js',
   './lib/three/three.module.js', './lib/three/addons/controls/OrbitControls.js', './lib/three/addons/loaders/GLTFLoader.js',
   './lib/three/addons/utils/BufferGeometryUtils.js', './lib/three/addons/environments/RoomEnvironment.js',
   './lib/three/addons/loaders/DRACOLoader.js', './lib/three/addons/libs/draco/draco_wasm_wrapper.js', './lib/three/addons/libs/draco/draco_decoder.wasm',
