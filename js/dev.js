@@ -75,6 +75,7 @@ if (PROJECTS.length) {
         <h3>${esc(p.title)}</h3>
         ${p.summary ? `<p>${esc(p.summary)}</p>` : ''}
         <div class="tags">${(p.stack || []).map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>
+        ${safeUrl(p.live) ? `<a class="pcard__launch" href="${esc(p.live)}" target="_blank" rel="noopener">launch interface <i>↗</i></a>` : ''}
       </div></article>`;
   }).join('');
   $('#projFilters').addEventListener('click', (e) => {
@@ -91,7 +92,7 @@ function openProject(i) {
     <div class="modal__in"><p class="kicker"><span class="g">//</span> ${esc(p.year || 'project')}</p><h3>${esc(p.title)}</h3>
     ${p.summary ? `<p class="sum">${esc(p.summary)}</p>` : ''}${p.body ? `<p class="body">${esc(p.body)}</p>` : ''}
     <div class="tags" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:22px">${(p.stack || []).map((t) => `<span class="tag">${esc(t)}</span>`).join('')}</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">${safeUrl(p.repo) ? `<a class="btn btn--solid" href="${esc(p.repo)}" target="_blank" rel="noopener noreferrer">view code <i>↗</i></a>` : ''}${safeUrl(p.live) ? `<a class="btn" href="${esc(p.live)}" target="_blank" rel="noopener noreferrer">open live <i>↗</i></a>` : ''}</div></div>`;
+    <div style="display:flex;gap:10px;flex-wrap:wrap">${safeUrl(p.live) ? `<a class="btn btn--solid" href="${esc(p.live)}" target="_blank" rel="noopener">launch interface <i>↗</i></a>` : ''}${safeUrl(p.repo) ? `<a class="btn ${safeUrl(p.live) ? '' : 'btn--solid'}" href="${esc(p.repo)}" target="_blank" rel="noopener noreferrer">view code <i>↗</i></a>` : ''}</div></div>`;
   $('#modal').classList.add('is-open'); $('#modal').setAttribute('aria-hidden', 'false'); document.body.style.overflow = 'hidden';
 }
 function closeModal() { $('#modal').classList.remove('is-open'); $('#modal').setAttribute('aria-hidden', 'true'); document.body.style.overflow = ''; }

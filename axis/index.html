@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0f14">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>A.X.I.S. - Medical Simulation</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/axis.css">
+</head>
+<body>
+  <div id="loading">
+    <div class="load-box">
+      <div class="brand-title big"><span>◬</span> A.X.I.S.</div>
+      <div class="load-sub">Anatomical eXploration &amp; Interactive System</div>
+      <div class="load-track"><div id="load-bar"></div></div>
+      <div id="load-label">Starting...</div>
+    </div>
+  </div>
+
+  <div id="top-bar">
+    <div class="brand-title"><span>◬</span> A.X.I.S.</div>
+    <div class="top-actions">
+      <button class="drawer-btn icon-only" id="info-toggle" title="Info">ⓘ</button>
+      <button class="drawer-btn" onclick="toggleAssetsModal()">📦 <span class="hide-sm">Objects / Assets</span></button>
+    </div>
+  </div>
+
+  <!-- Live telemetry -->
+  <div id="telemetry">
+    <div class="mon-head"><span id="t-rhythm">Sinus</span><span id="t-clock">00:00</span></div>
+    <canvas id="ecg"></canvas>
+    <div class="vitals">
+      <div class="vital hr"><label>HR</label><b id="t-hr">72</b><small>bpm</small></div>
+      <div class="vital"><label>BP</label><b id="t-bp">120/80</b><small>mmHg</small></div>
+      <div class="vital spo2"><label>SpO₂</label><b id="t-spo2">98%</b></div>
+      <div class="vital"><label>RR</label><b id="t-rr">14</b><small>/min</small></div>
+      <div class="vital extra" id="t-extra" hidden><label id="t-extra-label"></label><b id="t-extra-val"></b></div>
+    </div>
+  </div>
+
+  <!-- Anatomical Fact HUD -->
+  <div id="fact-hud" class="show">
+    <h4 id="fact-title">Anatomical Fact HUD</h4>
+    <p id="fact-text">Select an anatomical model from the drawer or an interactive tool from the bottom dock.</p>
+  </div>
+
+  <!-- Left Zoom Slider -->
+  <div id="left-slider-container">
+    <span class="zoom-lbl">－</span>
+    <input type="range" class="vertical-slider" id="zoomSlider" min="0" max="100" step="1" value="50" oninput="adjustCameraZoom(this.value)">
+    <span class="zoom-lbl">＋</span>
+  </div>
+
+  <div id="canvas-container"></div>
+  <div id="labels" hidden></div>
+  <!-- Annotation card (opens when a numbered pin is tapped) -->
+  <div id="anno-card" hidden role="dialog" aria-live="polite">
+    <div class="anno-head"><span id="anno-num">1</span><span id="anno-title"></span><button id="anno-x" aria-label="Close">✕</button></div>
+    <p id="anno-desc"></p>
+    <p id="anno-key"></p>
+    <div class="anno-nav"><button id="anno-prev" aria-label="Previous">◀</button><span id="anno-count"></span><button id="anno-next" aria-label="Next">▶</button></div>
+  </div>
+  <!-- Exploded view -->
+  <div id="explode-panel"><span>Explode</span><input type="range" id="explodeSlider" min="0" max="100" value="0"><span id="explodeVal">0%</span></div>
+
+  <!-- Procedure panel -->
+  <div id="proc" hidden>
+    <div class="proc-head"><span id="proc-title"></span><button id="proc-help" title="How to perform this procedure">? Guide</button></div>
+    <ol id="proc-steps"></ol>
+    <p id="proc-hint"></p>
+    <div id="pad-wrap" hidden><div id="pad"><span>▲</span><span>▼</span></div><div id="pad-label">Drag up to advance</div></div>
+    <div class="proc-progress"><div class="proc-track"><div id="proc-bar"></div></div><span id="proc-progress-label"></span></div>
+    <div id="proc-actions"></div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <!-- Event log -->
+  <details id="log-box"><summary>Event log</summary><ol id="log"></ol></details>
+
+  <!-- Procedure guide -->
+  <div id="guide" hidden>
+    <div class="guide-card">
+      <div class="guide-top"><span id="guide-title"></span><button id="guide-x" aria-label="Close">✕</button></div>
+      <div id="guide-dots"></div>
+      <div id="guide-body"></div>
+      <div class="guide-nav">
+        <button class="proc-btn" id="guide-prev">Back</button>
+        <button class="proc-btn primary" id="guide-next">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Death / debrief -->
+  <div id="death" hidden>
+    <div class="death-card">
+      <div class="flat"></div>
+      <h2>Patient deceased</h2>
+      <p id="death-cause"></p>
+      <p id="death-time" class="muted"></p>
+      <h4>What happened</h4>
+      <ol id="death-events"></ol>
+      <div class="death-actions"><button class="proc-btn primary" id="death-retry">Try again</button><button class="proc-btn" id="death-close">Review the scene</button></div>
+    </div>
+  </div>
+
+  <!-- Tool dock -->
+  <div id="mac-dock-container">
+    <div class="dock-item active" data-tool="inspect" onclick="selectTool('inspect')" title="Inspect">👆<span class="tip">Inspect</span></div>
+    <div class="dock-item" data-tool="needle" onclick="selectTool('needle')" title="Needle: lung puncture">💉<span class="tip">Needle</span></div>
+    <div class="dock-item" data-tool="catheter" onclick="selectTool('catheter')" title="Guide wire: coronary stent">〰️<span class="tip">Catheter</span></div>
+    <div class="dock-item" data-tool="stent" onclick="selectTool('stent')" title="Stent deployer">🩺<span class="tip">Stent</span></div>
+  </div>
+
+  <!-- Playback controls -->
+  <div id="anim-toolbar">
+    <div class="anim-btn active" id="playBtn" onclick="playAnim()" title="Play">▶</div>
+    <div class="anim-btn" id="pauseBtn" onclick="pauseAnim()" title="Pause">⏸</div>
+    <div class="anim-btn" onclick="cycleSpeed()" title="Simulation speed"><span class="speed-text" id="speedDisplay">1.0x</span></div>
+    <div class="anim-btn" onclick="resetAnim()" title="Reset simulation">⏮</div>
+    <div class="anim-btn" id="flowBtn" onclick="toggleFlow()" title="Blood flow (X-ray)">🩸</div>
+    <div class="anim-btn" id="airBtn" onclick="toggleAir()" title="Air flow only (X-ray)">🌬️</div>
+    <div class="anim-btn active" id="labelBtn" onclick="toggleLabels()" title="Numbered labels">🏷️</div>
+    <div class="anim-btn" id="explodeBtn" onclick="toggleExplode()" title="Exploded view">💥</div>
+  </div>
+
+  <!-- Assets drawer -->
+  <div id="assets-modal">
+    <div class="modal-header"><span>Anatomical Assets</span><span class="close-btn" onclick="toggleAssetsModal()">✕</span></div>
+    <div class="tab-container">
+      <button class="tab-btn active" onclick="switchTab('fullbody-tab', this)">Full Body</button>
+      <button class="tab-btn" onclick="switchTab('individual-tab', this)">Individual</button>
+      <button class="tab-btn" onclick="switchTab('layers-tab', this)">Layers</button>
+    </div>
+    <div id="fullbody-tab" class="tab-content active"></div>
+    <div id="individual-tab" class="tab-content"><div class="grid-2col" id="individual-grid"></div></div>
+    <div id="layers-tab" class="tab-content"></div>
+  </div>
+
+  <script>
+    // Local development: remove any offline service worker an earlier version installed (it kept serving old code)
+    if ('serviceWorker' in navigator && ['localhost', '127.0.0.1'].includes(location.hostname)) navigator.serviceWorker.getRegistrations().then(rs => {
+      if (!rs.length) return;
+      Promise.all(rs.map(r => r.unregister())).then(() => caches.keys()).then(ks => Promise.all(ks.map(k => caches.delete(k)))).then(() => {
+        try { if (!sessionStorage.getItem('axisSwCleared')) { sessionStorage.setItem('axisSwCleared', '1'); location.reload(); } } catch (e) {}
+      });
+    });
+  </script>
+  <script type="importmap">
+    { "imports": { "three": "./lib/three/three.module.js", "three/addons/": "./lib/three/addons/" } }
+  </script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

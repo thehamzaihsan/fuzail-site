@@ -54,5 +54,12 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/axis",
+      "destination": "/axis/",
+      "permanent": true
+    }
   ]
 }

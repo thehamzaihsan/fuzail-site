@@ -142,6 +142,8 @@ body.menu-open .burger i:first-child { transform: translateY(3px) rotate(45deg);
 .pcard.is-big h3 { font-size: clamp(30px, 3.6vw, 56px); }
 .pcard p { margin: 0; color: var(--mut); }
 .pcard .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 6px; }
+.pcard__launch { position: relative; z-index: 2; align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; padding: 10px 16px; border-radius: 999px; background: var(--g); color: #04110c; font-family: var(--mono); font-size: 13px; font-weight: 600; text-transform: lowercase; transition: transform .25s, box-shadow .25s; }
+.pcard__launch i { font-style: normal; } .pcard__launch:hover { transform: translateY(-2px); box-shadow: 0 8px 28px color-mix(in srgb, var(--g) 45%, transparent); }
 .pcard__links { display: flex; gap: 8px; } .pcard__links a { font-family: var(--mono); font-size: 12.5px; color: var(--g); padding: 6px 0; } .pcard__links a:hover { text-decoration: underline; }
 
 /* repos */

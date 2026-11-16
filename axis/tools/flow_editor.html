@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AXIS Flow Path Editor</title>
+<style>
+  :root { --bg: #0d1117; --panel: #161b22; --line: #30363d; --text: #e6edf3; --muted: #8b949e; --accent: #2f81f7; --rv: #6c8cff; --lv: #ff5a5a; --warn: #f0b429; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 13px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; overflow: hidden; }
+  #view { position: fixed; inset: 0; }
+  #panel { position: fixed; top: 12px; left: 12px; width: 300px; max-height: calc(100% - 24px); overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+  h1 { font-size: 15px; margin: 0 0 4px; }
+  p.sub { margin: 0 0 10px; color: var(--muted); }
+  fieldset { border: 1px solid var(--line); border-radius: 8px; margin: 0 0 10px; padding: 8px 10px; }
+  legend { color: var(--muted); padding: 0 4px; }
+  label { display: flex; align-items: center; gap: 8px; margin: 4px 0; }
+  button { background: #21262d; color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font: inherit; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0; }
+  input[type=range] { flex: 1; }
+  #sel { color: var(--muted); min-height: 1.4em; }
+  #status { margin-top: 8px; color: var(--muted); min-height: 1.4em; }
+  .rv { color: var(--rv); } .lv { color: var(--lv); } .warn { color: var(--warn); }
+  kbd { background: #21262d; border: 1px solid var(--line); border-radius: 4px; padding: 0 4px; font-size: 11px; }
+  ul.help { margin: 4px 0 0 16px; padding: 0; color: var(--muted); }
+</style>
+</head>
+<body>
+<div id="view"></div>
+<div id="panel">
+  <h1>Flow path editor</h1>
+  <p class="sub">Drag the points to shape the path the blood follows through each ventricle in the cross-section view.</p>
+  <fieldset><legend>Path</legend>
+    <label><input type="radio" name="path" value="RV" checked> <span class="rv">● Right ventricle</span> <input type="checkbox" id="enRV" checked title="use this path in the app"> use</label>
+    <label><input type="radio" name="path" value="LV"> <span class="lv">● Left ventricle</span> <input type="checkbox" id="enLV" title="use this path in the app"> use</label>
+    <div id="sel">Click a point to select it.</div>
+    <label>Width <input type="range" id="rad" min="0.6" max="6" step="0.1" value="2.5"> <span id="radv">2.5 mm</span></label>
+    <div class="row">
+      <button id="add">Add point after</button><button id="del">Delete point</button>
+    </div>
+  </fieldset>
+  <fieldset><legend>Show</legend>
+    <label><input type="checkbox" id="showHeart" checked> Heart</label>
+    <label>Heart opacity <input type="range" id="op" min="0.1" max="1" step="0.05" value="0.55"></label>
+    <label><input type="checkbox" id="showBlood" checked> Blood space of this ventricle (dots)</label>
+    <label><input type="checkbox" id="showFlow" checked> Preview flow</label>
+  </fieldset>
+  <div class="row">
+    <button class="primary" id="save">Save to project</button><button id="dl">Download JSON</button><button id="reset">Reset path</button>
+  </div>
+  <div id="status"></div>
+  <fieldset style="margin-top:10px"><legend>How to</legend>
+    <ul class="help">
+      <li>Left-drag empty space: rotate · right-drag: pan · wheel: zoom</li>
+      <li>Drag a point: moves it parallel to the screen. Rotate the view to move it in depth.</li>
+      <li>A point turns <span class="warn">yellow</span> when it sits outside the blood space (inside muscle).</li>
+      <li><kbd>Del</kbd> deletes the selected point, <kbd>A</kbd> adds one after it.</li>
+      <li>The path starts at the inflow valve and ends at the outflow valve; the app joins it to the vein and artery streams.</li>
+    </ul>
+  </fieldset>
+</div>
+<script type="importmap">{ "imports": { "three": "../lib/three/three.module.js", "three/addons/": "../lib/three/addons/" } }</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+const $ = id => document.getElementById(id);
+const status = (t, cls) => { $('status').textContent = t; $('status').className = cls || ''; };
+// (the web copy of the app serves models as base64 text; fall back to it if the .glb is not served)
+async function loadGLB(url) {
+  const loader = new GLTFLoader();
+  try { return await loader.loadAsync(url); }
+  catch (e) { const t = await (await fetch(url + '.b64.txt')).text(); const bin = Uint8Array.from(atob(t.trim()), c => c.charCodeAt(0)); return await loader.parseAsync(bin.buffer, ''); }
+}
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(2, devicePixelRatio)); renderer.setSize(innerWidth, innerHeight);
+$('view').append(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0d1117);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x334455, 1.6)); const dl = new THREE.DirectionalLight(0xffffff, 1.6); dl.position.set(1, 2, 3); scene.add(dl);
+const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, 0.0005, 10);
+const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true;
+addEventListener('resize', () => { camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth, innerHeight); });
+
+// everything below lives in the cut-heart model's own coordinates (the same frame the app's blood cells use)
+const root = new THREE.Group(); scene.add(root);
+const [gltf, D, saved] = await Promise.all([
+  loadGLB('../assets/heart_cutaway.glb'),
+  fetch('../assets/cutflow.json').then(r => r.json()),
+  fetch('../assets/flowpaths_user.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).catch(() => null),
+]);
+const heartMats = [];
+gltf.scene.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.transparent = true; o.material.opacity = 0.55; o.material.depthWrite = false; o.material.side = THREE.DoubleSide; heartMats.push(o.material); } });
+root.add(gltf.scene);
+
+// blood voxels of each ventricle, for orientation and the inside/outside check
+const b64 = (s, T) => { const bin = atob(s), u = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new T(u.buffer); };
+const [X, Y, Z] = D.dim, h = D.h, lo = D.lo, idx = b64(D.idx, Uint32Array), reg = b64(D.reg, Uint8Array);
+const cellOf = new Map(); for (let i = 0; i < idx.length; i++) cellOf.set(idx[i], reg[i]);
+const regionAt = p => { const x = Math.floor((p.x - lo[0]) / h), y = Math.floor((p.y - lo[1]) / h), z = Math.floor((p.z - lo[2]) / h); return cellOf.get(x + X * (y + Y * z)) || 0; };
+const cloud = {};
+for (const [k, r, col] of [['RV', 2, 0x6c8cff], ['LV', 5, 0xff5a5a]]) {
+  const pos = []; for (let i = 0; i < idx.length; i++) if (reg[i] === r) { const li = idx[i]; pos.push(lo[0] + (li % X + 0.5) * h, lo[1] + (Math.floor(li / X) % Y + 0.5) * h, lo[2] + (Math.floor(li / (X * Y)) + 0.5) * h); }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  cloud[k] = new THREE.Points(g, new THREE.PointsMaterial({ color: col, size: 0.0006, transparent: true, opacity: 0.35, depthWrite: false })); root.add(cloud[k]);
+}
+
+// default paths: in through the inflow valve, down the free wall to the apex, up along the septum to the outflow
+const DEF = {
+  RV: { region: 2, color: 0x6c8cff, pts: [[-0.41846, 1.32358, 0.0631], [-0.42146, 1.31858, 0.0651], [-0.41946, 1.31058, 0.0671], [-0.41346, 1.30558, 0.0661], [-0.40646, 1.30358, 0.0741], [-0.40246, 1.30958, 0.0621], [-0.40446, 1.31458, 0.0541], [-0.40846, 1.32258, 0.0621], [-0.40646, 1.33758, 0.0661], [-0.40596, 1.34298, 0.0711]] },
+  LV: { region: 5, color: 0xff5a5a, pts: [[-0.39646, 1.32858, 0.0641], [-0.38946, 1.32158, 0.0651], [-0.38446, 1.31258, 0.0731], [-0.38746, 1.30658, 0.0731], [-0.39246, 1.31258, 0.0661], [-0.39946, 1.32158, 0.0581], [-0.40346, 1.32958, 0.0651], [-0.40446, 1.33258, 0.0621], [-0.40746, 1.33558, 0.0561]] },
+};
+const paths = {};
+for (const k of ['RV', 'LV']) {
+  const s = saved && saved[k], def = DEF[k];
+  paths[k] = { ...def, enabled: s ? !!s.enabled : k === 'RV', pts: (s ? s.pts : def.pts).map(p => new THREE.Vector3(...p)), r: s && s.r ? s.r.slice() : def.pts.map(() => 0.0025) };
+  $('en' + k).checked = paths[k].enabled;
+}
+let cur = 'RV', sel = -1;
+
+// drawing
+const handleGeo = new THREE.SphereGeometry(0.0011, 16, 12);
+const groups = {};
+function rebuild(k) {
+  const P = paths[k]; if (groups[k]) { root.remove(groups[k]); groups[k].traverse(o => { if (o.geometry && o.geometry !== handleGeo) o.geometry.dispose(); }); }
+  const g = new THREE.Group(); groups[k] = g; root.add(g);
+  P.curve = new THREE.CatmullRomCurve3(P.pts, false, 'centripetal'); P.len = P.curve.getLength();
+  const active = k === cur;
+  g.add(new THREE.Mesh(new THREE.TubeGeometry(P.curve, 160, 0.00025, 8, false), new THREE.MeshBasicMaterial({ color: P.color, transparent: true, opacity: active ? 1 : 0.35, depthTest: false })));
+  // width envelope: rings every few millimetres
+  for (let t = 0; t <= 1.0001; t += 1 / 24) {
+    const p = P.curve.getPointAt(Math.min(1, t)), tan = P.curve.getTangentAt(Math.min(1, t)), r = radiusAt(P, t);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.00008, 4, 24), new THREE.MeshBasicMaterial({ color: P.color, transparent: true, opacity: active ? 0.45 : 0.15, depthTest: false }));
+    ring.position.copy(p); ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tan); g.add(ring);
+  }
+  P.handles = P.pts.map((p, i) => {
+    const inside = regionAt(p) === P.region, m = new THREE.Mesh(handleGeo, new THREE.MeshBasicMaterial({ color: i === sel && active ? 0xffffff : inside ? P.color : 0xf0b429, depthTest: false, transparent: true, opacity: active ? 1 : 0.4 }));
+    m.position.copy(p); m.renderOrder = 10; m.userData = { k, i }; g.add(m); return m;
+  });
+  // arrow at the end
+  const end = P.curve.getPointAt(1), dir = P.curve.getTangentAt(1);
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.0009, 0.0024, 12), new THREE.MeshBasicMaterial({ color: P.color, depthTest: false, transparent: true, opacity: active ? 1 : 0.35 }));
+  cone.position.copy(end).addScaledVector(dir, 0.0012); cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir); g.add(cone);
+  g.traverse(o => { if (o.isMesh) o.renderOrder = o.renderOrder || 9; });
+}
+function radiusAt(P, t) { const f = t * (P.r.length - 1), i = Math.min(P.r.length - 2, Math.floor(f)), a = f - i; return P.r[i] * (1 - a) + P.r[i + 1] * a; }
+function refreshAll() { rebuild('RV'); rebuild('LV'); updateSel(); for (const k in cloud) cloud[k].visible = $('showBlood').checked && k === cur; }
+function updateSel() {
+  const P = paths[cur];
+  if (sel < 0) { $('sel').textContent = `Click a point to select it (${P.pts.length} points).`; return; }
+  const inside = regionAt(P.pts[sel]) === P.region;
+  $('sel').innerHTML = `Point ${sel + 1} of ${P.pts.length}${sel === 0 ? ' (inflow valve)' : sel === P.pts.length - 1 ? ' (outflow valve)' : ''}${inside ? '' : ' · <span class="warn">outside the blood space</span>'}`;
+  $('rad').value = (P.r[sel] * 1000).toFixed(1); $('radv').textContent = `${(P.r[sel] * 1000).toFixed(1)} mm`;
+}
+
+// frame the camera on the heart, looking at the cut face (the app's view)
+const box = new THREE.Box3().setFromObject(gltf.scene), c = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3()).length();
+controls.target.copy(c); camera.position.copy(c).add(new THREE.Vector3(0, 0.15, 1).normalize().multiplyScalar(size * 1.3)); controls.update();
+
+// picking and dragging
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(); let drag = null;
+function pick(e) {
+  mouse.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(mouse, camera);
+  const hs = ray.intersectObjects(paths[cur].handles, false); return hs[0] ? hs[0].object : null;
+}
+renderer.domElement.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  const h0 = pick(e); if (!h0) return;
+  sel = h0.userData.i; controls.enabled = false;
+  const n = camera.getWorldDirection(new THREE.Vector3());
+  drag = { plane: new THREE.Plane().setFromNormalAndCoplanarPoint(n, paths[cur].pts[sel]) };
+  renderer.domElement.setPointerCapture(e.pointerId); rebuild(cur); updateSel();
+});
+renderer.domElement.addEventListener('pointermove', e => {
+  if (!drag) { renderer.domElement.style.cursor = pick(e) ? 'grab' : ''; return; }
+  mouse.set(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1); ray.setFromCamera(mouse, camera);
+  const p = new THREE.Vector3(); if (ray.ray.intersectPlane(drag.plane, p)) { paths[cur].pts[sel].copy(p); rebuild(cur); updateSel(); dirty(); }
+});
+addEventListener('pointerup', () => { drag = null; controls.enabled = true; });
+
+let changed = false; const dirty = () => { changed = true; status('Unsaved changes'); };
+for (const el of document.querySelectorAll('input[name=path]')) el.addEventListener('change', e => { cur = e.target.value; sel = -1; refreshAll(); });
+for (const k of ['RV', 'LV']) $('en' + k).addEventListener('change', e => { paths[k].enabled = e.target.checked; dirty(); });
+$('rad').addEventListener('input', e => { if (sel < 0) return; paths[cur].r[sel] = +e.target.value / 1000; $('radv').textContent = `${(+e.target.value).toFixed(1)} mm`; rebuild(cur); dirty(); });
+function addPoint() {
+  const P = paths[cur]; const i = sel < 0 ? P.pts.length - 2 : Math.min(sel, P.pts.length - 2);
+  const mid = P.pts[i].clone().lerp(P.pts[i + 1], 0.5); P.pts.splice(i + 1, 0, mid); P.r.splice(i + 1, 0, (P.r[i] + P.r[i + 1]) / 2); sel = i + 1; rebuild(cur); updateSel(); dirty();
+}
+function delPoint() { const P = paths[cur]; if (sel < 0 || P.pts.length <= 3) return; P.pts.splice(sel, 1); P.r.splice(sel, 1); sel = Math.min(sel, P.pts.length - 1); rebuild(cur); updateSel(); dirty(); }
+$('add').onclick = addPoint; $('del').onclick = delPoint;
+addEventListener('keydown', e => { if (e.key === 'Delete' || e.key === 'Backspace') delPoint(); if (e.key === 'a' || e.key === 'A') addPoint(); });
+$('reset').onclick = () => { const def = DEF[cur]; paths[cur].pts = def.pts.map(p => new THREE.Vector3(...p)); paths[cur].r = def.pts.map(() => 0.0025); sel = -1; rebuild(cur); updateSel(); dirty(); };
+$('showHeart').onchange = e => { gltf.scene.visible = e.target.checked; };
+$('op').oninput = e => { for (const m of heartMats) { m.opacity = +e.target.value; m.depthWrite = +e.target.value > 0.95; } };
+$('showBlood').onchange = refreshAll;
+
+const out = () => { const o = { version: 1, frame: 'heart_cutaway model space (metres)' }; for (const k of ['RV', 'LV']) o[k] = { enabled: paths[k].enabled, pts: paths[k].pts.map(p => [+p.x.toFixed(5), +p.y.toFixed(5), +p.z.toFixed(5)]), r: paths[k].r.map(v => +v.toFixed(5)) }; return o; };
+$('dl').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(out(), null, 1)], { type: 'application/json' })); a.download = 'flowpaths_user.json'; a.click(); status('Downloaded. Put it in the project\'s assets folder.'); };
+$('save').onclick = async () => {
+  try {
+    const r = await fetch('/save-flowpaths', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(out()) });
+    if (!r.ok) throw new Error(r.status);
+    changed = false; status('Saved to assets/flowpaths_user.json. Refresh the app to see it.', 'rv');
+  } catch (e) { status('Could not save here (start the app with Start AXIS.bat). Use Download JSON instead.', 'warn'); }
+};
+addEventListener('beforeunload', e => { if (changed) { e.preventDefault(); e.returnValue = ''; } });
+
+// preview particles running along the selected path inside its width
+const NP = 160, pg = new THREE.BufferGeometry(), pp = new Float32Array(NP * 3); pg.setAttribute('position', new THREE.BufferAttribute(pp, 3));
+const prev = new THREE.Points(pg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.0009, depthTest: false })); prev.renderOrder = 11; root.add(prev);
+const seeds = Array.from({ length: NP }, () => ({ s: Math.random(), a: Math.random() * 6.283, rr: Math.sqrt(Math.random()) * 0.85, sp: 0.75 + Math.random() * 0.5 }));
+const clock = new THREE.Clock(), up = new THREE.Vector3(), tmp = new THREE.Vector3(), nrm = new THREE.Vector3(), bin = new THREE.Vector3();
+function frame() {
+  const dt = Math.min(0.05, clock.getDelta()), P = paths[cur];
+  prev.visible = $('showFlow').checked;
+  if (prev.visible && P.curve) {
+    for (let i = 0; i < NP; i++) {
+      const q = seeds[i]; q.s += dt * 0.035 * q.sp / Math.max(0.01, P.len); if (q.s > 1) q.s -= 1;
+      const p = P.curve.getPointAt(q.s), t = P.curve.getTangentAt(q.s);
+      up.set(0, 1, 0); if (Math.abs(t.dot(up)) > 0.9) up.set(1, 0, 0);
+      nrm.crossVectors(t, up).normalize(); bin.crossVectors(t, nrm);
+      const r = radiusAt(P, q.s) * q.rr; tmp.copy(p).addScaledVector(nrm, Math.cos(q.a) * r).addScaledVector(bin, Math.sin(q.a) * r);
+      pp[i * 3] = tmp.x; pp[i * 3 + 1] = tmp.y; pp[i * 3 + 2] = tmp.z;
+    }
+    pg.attributes.position.needsUpdate = true;
+  }
+  controls.update(); renderer.render(scene, camera); requestAnimationFrame(frame);
+}
+refreshAll(); frame();
+status(saved ? 'Loaded your saved paths.' : 'Showing the default paths.');
+</script>
+</body>
+</html>

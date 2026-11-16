@@ -1,5 +1,5 @@
 {
- "rev": 22,
+ "rev": 23,
  "artist": {
   "name": "Fuzail Ahmed",
   "first": "FUZAIL",
@@ -970,6 +970,7 @@
      "Physics simulation",
      "Real-time feedback"
     ],
+    "live": "https://fuzailahmed.com/axis/",
     "image": "screenshot-2026-10-05-213649-0f1104",
     "year": "2026",
     "featured": true,
